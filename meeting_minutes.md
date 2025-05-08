@@ -16,7 +16,7 @@ Diskussed Topics:
 Tasks todo until the next meeting:
 - Abdul Manaf: 
 - Anisha: 
-- Fabian: Prepare test on FEMM magnetic field simulation
+- Fabian: Prepare test on FEMM magnetic field simulation; provide sketches for CAD designs
 - Murtuza:
 - Rohith:
 - Smit:
