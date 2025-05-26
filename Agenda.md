@@ -5,14 +5,14 @@ Location:A3.2.08
 
 
 Participants:
-Varshini
-Murtuza
-Rohith
-Anisha
-Manaf
-Smit
-Abhyshek
-Prof. Mink
+-Varshini
+-Murtuza
+-Rohith
+-Anisha
+-Manaf
+-Smit
+-Abhyshek
+-Prof. Mink
 
 
 Tasks Done in this week:
