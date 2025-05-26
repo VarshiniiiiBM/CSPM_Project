@@ -1,6 +1,6 @@
-Agenda for the next meeting
+# Agenda for the next meeting
 
-Meeting Time :27.05.2025, 10 am
+Meeting Time :27.05.2025, 10 am;
 Location:A3.2.08
 
 
