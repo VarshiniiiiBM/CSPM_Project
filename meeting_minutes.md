@@ -4,6 +4,7 @@ Location: A3.2.08
  Time: 10:00 am
 
 Minutes Made by Varshini
+Small corrections / clarifications by Fabian (2025-05-30)
 
 - Participants:
 - Varshini Barallu Manjunath
@@ -14,7 +15,6 @@ Minutes Made by Varshini
 - Smit Patel Kumar
 - Abhyshek Rajmohan
 - Professor Mink
-
 
 
 
@@ -38,11 +38,11 @@ Feedback by Professor:
 
 Feedback by Professor:
 
-* Use some Jason Structure or define just 1 character that will never happen in data (should be discussed with the team)
-* Sending data every 50 ms is not suggested 
+* Use some JSON Structure (https://www.json.org) or define 1 start / stop character or string (e.g. "START" / "STOP") that will never happen in data (should be discussed with the team)
+* Sending data every 50 ms is not useful, as sampling rate will be 10kHz or more
 * In transmission of data there should be more delay
 * Put the data sheets in the hessen box 
-* Change the baud rate because its not fast enough
+* Change the baud rate if it is not fast enough
 
 
 10.45-10.52 - Manaf and Anisha
@@ -70,14 +70,14 @@ Feedback by Professor:
 * Simulation should be uploaded 
 * Take the existing one and optimize it 
 * Think of different simulating design (For example: Diagonal, 45 degrees) and how to 3D model and simulate
-* Try modifying Resistance  
+* Calculate Resistance and Inductance to make sure it will work with 24V
 * How to calculate Inductance?
 * Maybe more windings?? higher for the marbel but same current??(needs to be decided and if agreed calculated)
 * For the question asked by smit- How to calculate magnetic force? 
   - its done in the test 
   - its there in the lua code
   - it depends on how high you want to shoot the marbel
-* Suggestion by professor - 0.5mm of the thickness is optimum but, might be improved
+* Suggestion by professor - wire diameter 0.5mm ... 0.75mm seems to be optimum according to experiences made with previous designs; but also other diameters might work
 
 
 
@@ -85,12 +85,13 @@ Feedback by Professor:
 
 * Include more slides from next meeting 
 * In the next weeks meeting along with Prof Klein everybody must present for 5 mins (min 4 - max 6)
-* Focus more on the results of what we have done in the project already.
+* Focus more on the results of what we have done in the project already and not what you are planning to do; there can be a small outlook for future work (1 min for each student)
 * See the coil of the other group.
 
-1.Next weeks Agenda and meeting minutes will be done by Anisha 
+1.Next weeks Agenda and meeting minutes will be done by Anisha. Please prepare everything (switch on the projector etc...) so that we can directly start 10:00 without further delay. Anisha will also give a short overview of the agenda at the beginning (2..3min)
 
 2.Smit will collect the wire from professor at 9.00 am in the lab
+
 
 
 11.10-11.30 - Abhyshek
