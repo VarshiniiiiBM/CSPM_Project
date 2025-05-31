@@ -7,7 +7,7 @@ Team Members:
 - Rohith Joy
 - Murtuza Udaipurvala
 - Abdul Manaf 
-- Anisha
+- Anisha Bhanderi
 - Smit Patel Kumar
 - Fabian Mink (Supervisor)
 
