@@ -22,7 +22,7 @@ Tasks Done This Week:
 
 *Smit: Selection of coil wire diameter, Calculating inductance using a Lua script, and calculating resistance to work with 24V
 
-*Murtuza: will be updated soon   
+*Murtuza: Worked on the code for sending data in json format, implemented systick and simple timer scheduling of idle processes and generating data.
 
 
 On the day of the meeting: 
