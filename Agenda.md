@@ -28,5 +28,7 @@ Tasks Done This Week:
 On the day of the meeting: 
 
 *10.00 - 10.30 - Everybody will explain about their tasks done in the last week.
+
 *10.30 - 10.40 - Any doubts or suggestions.
+
 *10.40 - 11.00 - Feedback from Prof. Klein regarding the process and organization of the project meetings, suggestions for improvement.
