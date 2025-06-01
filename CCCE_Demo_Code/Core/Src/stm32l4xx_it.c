@@ -41,7 +41,13 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+volatile uint32_t send_data_flag=1;
+volatile uint32_t collect_data_flag=0;
+volatile uint32_t ms_counter=0;
+volatile uint32_t us_counter=0;
+volatile uint32_t sec_counter=0;
+volatile uint32_t val1 = 0;
+volatile int val2 = 200;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -55,9 +61,11 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim6;
 
 /* USER CODE BEGIN EV */
-
+extern volatile uint32_t readp;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -183,9 +191,31 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
-
+	//	us_counter++; // 0.1 ms
+	//	collect_data_flag = 1;
+	//	if (us_counter >=10)
+	//	{
+	//us_counter = 0; // one millisecond
+	ms_counter++;
+	if (ms_counter%100==0)
+	{
+		if (send_data_flag)
+		{
+			send_data_flag = 0;
+		}
+		else
+		{
+			send_data_flag = 1;
+		}
+	}
+	if (ms_counter>=1000)
+	{
+		ms_counter = 0; // One second.
+		sec_counter ++;
+	}
+	//	}
   /* USER CODE END SysTick_IRQn 0 */
-  HAL_IncTick();
+
   /* USER CODE BEGIN SysTick_IRQn 1 */
 
   /* USER CODE END SysTick_IRQn 1 */
@@ -197,6 +227,37 @@ void SysTick_Handler(void)
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32l4xx.s).                    */
 /******************************************************************************/
+
+/**
+  * @brief This function handles TIM3 global interrupt.
+  */
+void TIM3_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM3_IRQn 0 */
+	if(send_data_flag)
+	{
+		put_data((float)1,val1++,val2);
+		val2*= -1;
+	}
+  /* USER CODE END TIM3_IRQn 0 */
+  /* USER CODE BEGIN TIM3_IRQn 1 */
+	__HAL_TIM_CLEAR_FLAG(&htim3, TIM_FLAG_UPDATE);
+  /* USER CODE END TIM3_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM6 global interrupt, DAC channel1 and channel2 underrun error interrupts.
+  */
+void TIM6_DAC_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
+
+  /* USER CODE END TIM6_DAC_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim6);
+  /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
+
+  /* USER CODE END TIM6_DAC_IRQn 1 */
+}
 
 /* USER CODE BEGIN 1 */
 

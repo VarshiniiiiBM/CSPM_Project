@@ -33,6 +33,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define PI 3.14159265
+#define buffer_size 2048
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -41,23 +42,40 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+TIM_HandleTypeDef htim3;
+
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+extern volatile uint32_t send_data_flag;
+extern volatile uint32_t collect_data_flag;
 
+uint8_t buffer[100]={0};
+struct data_struct {
+	float data1;
+	int data2;
+	int data3;
+};
+
+struct data_struct data_buff[buffer_size]={0};
+volatile uint32_t readp = 0;
+volatile uint32_t writep = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
-
+void Usart_Transmit_Str(uint8_t *msg);
+void Systick_configuration(void);
+void send_data_json(struct data_struct *var);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t buffer[80]={0};
+
 /* USER CODE END 0 */
 
 /**
@@ -84,30 +102,42 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  Systick_configuration();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-  double time = 0;
-  uint32_t val1 = 0;
-  int val2 = 200;
+//  double time = 0;
+//  uint32_t val1 = 0;
+//  int val2 = 200;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  float out = (float)sin(2*PI*1*time*0.05);
-	  //snprintf(buffer,80,"%d,1,2\n",out);
-	  snprintf(buffer,80,"%f,%d,%d\n",out,val1++,val2);
-	  Usart_Transmit_Str(buffer);
-	  time++;
-	  val2*= -1;
-	  HAL_Delay(50);
-
+	  //float out = (float)sin(2*PI*1*time*0.05);
+//	  if (collect_data_flag && send_data_flag)
+//	  {
+//		  data_buff[readp].data1 = (float)1;
+//		  data_buff[readp].data2 = val1++;
+//		  data_buff[readp].data3 = val2;
+//		  readp++;
+//		  readp = readp & ~512;
+//		  val2*= -1;
+//		  collect_data_flag = 0;
+//	  }
+	  if (readp != writep)
+	  {
+		  //float out = (float)1;
+		  //snprintf(buffer,80,"Acc_X_g:%f,Y_g:%d,Z_g:%d\n",out,val1++,val2);
+		  send_data_json(&data_buff[writep++]);
+		  writep = writep & ~buffer_size;
+		  Usart_Transmit_Str(buffer);
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -162,6 +192,51 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief TIM3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM3_Init(void)
+{
+
+  /* USER CODE BEGIN TIM3_Init 0 */
+
+  /* USER CODE END TIM3_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM3_Init 1 */
+
+  /* USER CODE END TIM3_Init 1 */
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 0;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 8000-1;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM3_Init 2 */
+  HAL_TIM_Base_Start_IT(&htim3);
+  /* USER CODE END TIM3_Init 2 */
+
 }
 
 /**
@@ -268,7 +343,52 @@ void Usart_Transmit_Str(uint8_t *msg)
 		}
 	}
 }
+
+void Systick_configuration(void)
+{
+	//https://www.learningaboutelectronics.com/Articles/Systick-reload-value-register-calculator.php#answer
+	uint32_t HCLK = HAL_RCC_GetHCLKFreq();
+	if (SysTick_Config(HCLK/1000)) // 1ms
+	{
+		Error_Handler();
+	}
+}
+
+void send_data_json(struct data_struct* var)
+{
+	snprintf(buffer,100,"{\"Data_1\":%f,\"Data_2\":%d,\"Data_3\":%d}\n",var->data1,var->data2,var->data3);
+}
+
+void put_data(float val1,int val2,int val3)
+{
+	data_buff[readp].data1 = (float)val1;
+	data_buff[readp].data2 = val2;
+	data_buff[readp].data3 = val3;
+	readp++;
+	readp = readp & ~buffer_size;
+}
 /* USER CODE END 4 */
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM6 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM6) {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+
+  /* USER CODE END Callback 1 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.
