@@ -1,4 +1,4 @@
-# Agenda for the next meeting
+# Agenda meeting 2025-06-03
 
 Meeting Time: 03.06.2025, 10 am;
 Location: A3.2.08
