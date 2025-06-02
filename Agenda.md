@@ -18,7 +18,7 @@ Tasks Done This Week:
 
 *Rohith and Varshini: Re-modelling of the coil carrier (3D printing)
 
-*Manaf and Anisha: Visualisation of sample data using matplotlib, working on a JSON file
+*Manaf and Anisha: Visualisation of sample data using matplotlib, made changes in code to parse JSON file
 
 *Smit: Selection of coil wire diameter, Calculating inductance using a Lua script, and calculating resistance to work with 24V
 
