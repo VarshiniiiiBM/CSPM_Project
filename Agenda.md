@@ -1,4 +1,4 @@
-# Agenda for the next meeting
+# Agenda meeting 2025-06-03
 
 Meeting Time: 03.06.2025, 10 am;
 Location: A3.2.08
@@ -18,7 +18,7 @@ Tasks Done This Week:
 
 *Rohith and Varshini: Re-modelling of the coil carrier (3D printing)
 
-*Manaf and Anisha: Visualisation of sample data using matplotlib, working on a JSON file
+*Manaf and Anisha: Visualisation of sample data using matplotlib, made changes in code to parse JSON file
 
 *Smit: Selection of coil wire diameter, Calculating inductance using a Lua script, and calculating resistance to work with 24V
 
