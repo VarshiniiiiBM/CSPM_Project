@@ -32,3 +32,5 @@ On the day of the meeting:
 *10.30 - 10.40 - Any doubts or suggestions.
 
 *10.40 - 11.00 - Feedback from Prof. Klein regarding the process and organization of the project meetings, suggestions for improvement.
+
+*11.00 - 11.10 - Agreemens on how to use the GIT repository incl. Agenda and Meeting Minutes (Fabian)
