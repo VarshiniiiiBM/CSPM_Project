@@ -1,3 +1,119 @@
+# Meeting 2025-06-03
+
+Location: A3.2.08 Time: 10:00 am
+
+Minutes Made by Anisha
+
+- Participants:
+- Varshini Barallu Manjunath
+- Rohith Joy
+- Murtuza Udaipurvala
+- Abdul Manaf Mansoor
+- Anisha Bhanderi
+- Smit Patel
+- Professor Mink
+- Professor Klein
+  
+Anisha Bhanderi
+* Overview of the Agenda explained
+
+Discussed Topics
+
+Anisha and Manaf 
+
+* Data visualization of CSV, before using JSON format
+* Made changes in the Python code according to the JSON data structure
+* Explained the code used for plotting
+* Visualized the data on Matplotlib and showed the result in graphs 
+
+Feedback by Professor:
+
+* Change the range of the 2nd graph, no need to use delta
+* Change the JSON structure to reduce the number of bytes used
+* Do not use unarranged putty values in future presentations
+
+Smit Patel
+
+* Selected coil wire of diameter 0.2 mm
+* Reasons behind choosing thin wire: More number of turns, higher resistance, Stronger magnetic field
+* Inductance is calculated by using a lua script
+* Explained the calculation for resistance after changing the number of turns with a thinner wire.
+
+Feedback by Professor:
+
+* Question was asked: Why do you use thinner wire if you are not increasing the number of turns as expected?
+* Higher resistance is not good. If resistance is higher, then we have to generate more energy, and for storing energy, capacitors with higher capacitance will be needed.
+* Feedback for slides: Use units for each value. (website will be provided by Prof)
+* For slides, containing more formulas: Write in more arranged way, it should not be concentrated at one place. Use a subscript when needed
+
+Murtuza
+
+* Saved sample data in a buffer and sent it on the UART in JSON format.
+* Scheduling Systick for every 1 ms interrupt.
+* Configuring the Timer to generate data every 0.1 ms interrupt. Timer is running at 10 KHz.
+* Further tasks: Detecting Marble entry with Hall Effect sensor, Calculating Marble velocity. 
+
+Feedback by professor:
+
+*	For JSON data structure: Use array of values for all three data. By doing so, less number of bytes will be used and it will be easy to extract data for the other subteam.
+*	While using readp and writep, a race condition can create a problem, which can lead to missing data or changing and getting the wrong data.
+*	Same with send_data_flag as well
+
+Rohit and Varshini
+
+* 3D model for testing and tuning the hall effect sensor: to detect the position and calculate the speed
+* For sensor placement: measured the sensor and keep a bit more space for ease
+* Three differently inclined (10,20,30 degrees) models to check the change in speed
+* Coil carrier to redirect marble right-angle upwards
+* Two sensors placement: one on the center of coil winding and other one on the top
+* Suggestion of using two windings: One where the marble enters and other one from where the marble goes out
+* Concerns: 
+    o	Whether we can throw a marble to the top
+    o	If we increase speed, it can damage the edges of the coil carrier at log run
+    o	Which one will be better: right-angle coil carrier or inclined at some angle
+
+Feedback by Prof Klein:
+
+*	Got a general overview of the work, understood sketches
+*	Question related to calculation: What will be the force to send the marble on top? What will be the speed of the marble?
+
+Feedback by Prof Mink:
+
+* Do some calculations like height, force, energy, speed of a marble, etc. It should be a priority to understand physical functionality
+* Question: Why is there a square shape design (the same as winding design) on the top?
+  Answered by Rohit: If one coil winding is not able to generate energy, then it will be easy to design a second winding design
+* There should be one more sensor, to detect when the marble enters 
+
+Professors' Overall instruction:
+
+* Think of different coil carrier design
+* Include name and slide number on slides from the next meeting
+* Font size should be the same for all (16 px)
+* For code, do not use black background. Try to use white to make it easily visible
+* If the code is important and you want to explain it, then only include it in slides
+* Before the presentation, merge all slides and upload to Hessenbox
+
+Discussion about different designs of coil carrier:
+* In vertical structure, there will be space where marble can rest. Therefore, there will not be a requirement to use a sensor at the entrance, to detect when marble enters
+* The same idea can be implemented for inclined structures
+* Compared to inclined structures, vertical structures need less force, because friction will be less in vertical structures
+
+Feedback and suggestions by Prof Klein:
+
+* It looks like team members are not connected; all are working just for their own part of the project.
+* Start working as a team, there should be an idea of who is working on which part of the project
+* Write a To-Do list and interface in every meeting
+* What can be done to go to performing stage from storming phase?
+* Use strategy of three flags
+    o	Green flag – work has been done in time
+    o	Yellow flag – work has not been done in time
+    o	Red flag – work has not been started yet
+*	Be responsible for your part of the project, while keeping a general idea about the whole project
+*	Discuss in a team, each member should know some points: Definition of project, work packages, milestones, and what a common target is.
+
+Next week's Agenda and meeting minutes will be done by Smit Patel. He will also give a short overview of the agenda at the beginning (2 to 3min)
+
+
 # Meeting 2025-05-27
 
 Location: A3.2.08
