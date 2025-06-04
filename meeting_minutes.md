@@ -67,7 +67,8 @@ Rohit and Varshini
 * Coil carrier to redirect marble right-angle upwards
 * Two sensors placement: one on the center of coil winding and other one on the top
 * Suggestion of using two windings: One where the marble enters and other one from where the marble goes out
-* Concerns: 
+* Concerns:
+
     o	Whether we can throw a marble to the top
   
     o	If we increase speed, it can damage the edges of the coil carrier at log run
@@ -107,6 +108,7 @@ Feedback and suggestions by Prof Klein:
 * Write a To-Do list and interface in every meeting
 * What can be done to go to performing stage from storming phase?
 * Use strategy of three flags
+
     o	Green flag – work has been done in time
   
     o	Yellow flag – work has not been done in time
