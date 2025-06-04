@@ -69,7 +69,9 @@ Rohit and Varshini
 * Suggestion of using two windings: One where the marble enters and other one from where the marble goes out
 * Concerns: 
     o	Whether we can throw a marble to the top
+  
     o	If we increase speed, it can damage the edges of the coil carrier at log run
+  
     o	Which one will be better: right-angle coil carrier or inclined at some angle
 
 Feedback by Prof Klein:
@@ -106,7 +108,9 @@ Feedback and suggestions by Prof Klein:
 * What can be done to go to performing stage from storming phase?
 * Use strategy of three flags
     o	Green flag – work has been done in time
+  
     o	Yellow flag – work has not been done in time
+  
     o	Red flag – work has not been started yet
 *	Be responsible for your part of the project, while keeping a general idea about the whole project
 *	Discuss in a team, each member should know some points: Definition of project, work packages, milestones, and what a common target is.
