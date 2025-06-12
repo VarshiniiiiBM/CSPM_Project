@@ -38,5 +38,7 @@ List of items borrowed from Fabian to be returned at the end of the project:
 - BTS7960 H-Bridge Board
 - KY-035 Hall Sensors
 - 2x Board STM32L476 Nucleo, 1x USB Cable
+- Capacitor 22mF, 50V and Capacitor bank 20x1.5mF, 25V (2025-06-12)
+
 
 
