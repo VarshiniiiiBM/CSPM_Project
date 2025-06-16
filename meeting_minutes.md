@@ -32,7 +32,7 @@ In this phase we had discussion about what new things we are doing in project an
 - Matlab simulation for overall system by Murtaza.
 - Data visualization using Python matplot liberary by Anisha and Manaf.
 - Coil wire optimization and calculation for it by Smit.
-- Redesign of Coil cassier by Rohith and Varshini.
+- Redesign of Coil carrier by Rohith and Varshini.
 - STM32 Reprogramming by Murtaza.
 
   Phase -3
