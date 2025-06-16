@@ -1,3 +1,51 @@
+# Intermediate  2025-06-15
+
+Location: Steinkaute , Friedberg Time: 1 pm
+
+Minutes made by Smit
+
+- Participants:
+- Varshini Barallu Manjunath
+- Rohith Joy
+- Murtuza Udaipurvala
+- Abdul Manaf Mansoor
+- Anisha Bhanderi
+- Smit Patel
+
+Agenda :
+About mid term presentation/ presentation slides and dividing tasks/discussion about overview of project 
+and future work.
+
+
+
+Phase-1
+In this phase we discuss about tasks which was compulsory for all students.
+-3D - Modeling of coil carrier
+-FEMM Magnetic simulation and calculation based on that.
+
+Phase-2
+Brainstorming
+In this phase we had discussion about what new things we are doing in project and what results we had achieved so far.
+- Hall effect sensor design by Varshini and Rohith.
+- Matlab simulation for overall system by Murtaza.
+- Data visualization using Python matplot liberary by Anisha and Manaf.
+- Coil wire optimization and calculation for it by Smit.
+- Redesign of Coil cassier by Rohith and Varshini.
+- STM32 Reprogramming by Murtaza.
+
+  Phase -3
+
+  Future Work
+  In this phase we had discussion about task which are still pending and ideas needed for it.
+  - Coil carrier and hall effect sensor designs are still not confirmed.
+  - Power electronics for overll circuit. there is still some calculation we have to do for
+    capacitance.
+    
+   
+  
+  
+  
+
 # Meeting 2025-06-03
 
 Location: A3.2.08 Time: 10:00 am
