@@ -24,7 +24,9 @@ In this phase we discuss about tasks which was compulsory for all students.
 -FEMM Magnetic simulation and calculation based on that.
 
 Phase-2
+
 Brainstorming
+
 In this phase we had discussion about what new things we are doing in project and what results we had achieved so far.
 - Hall effect sensor design by Varshini and Rohith.
 - Matlab simulation for overall system by Murtaza.
@@ -36,6 +38,7 @@ In this phase we had discussion about what new things we are doing in project an
   Phase -3
 
   Future Work
+  
   In this phase we had discussion about task which are still pending and ideas needed for it.
   - Coil carrier and hall effect sensor designs are still not confirmed.
   - Power electronics for overll circuit. there is still some calculation we have to do for
