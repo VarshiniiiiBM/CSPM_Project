@@ -2,17 +2,16 @@ import json
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from mpl_toolkits.mplot3d import Axes3D
 from collections import deque
 import tkinter as tk
 from tkinter import ttk
 import random
 import time
-
+ 
 USE_MOCK = True  # Set to False for real serial data
 
-#Serial port setup
-if not USE_MOCK: 
+# Serial port setup
+if not USE_MOCK:
     try:
         import serial
         ser = serial.Serial('COM3', 115200, timeout=2)
@@ -24,7 +23,7 @@ if not USE_MOCK:
 else:
     ser = None
 
-#Mock serial data
+# Mock serial data
 def mock_serial_data():
     return json.dumps({
         "D1": [round(random.uniform(-1, 1), 2) for _ in range(1000)],
@@ -32,42 +31,47 @@ def mock_serial_data():
         "D3": [i * 3 for i in range(1000)]
     }) + "\n"
 
-#Data containers
-max_len = 100
+# Plot data structures
+max_len = 50
 data_1 = deque(maxlen=max_len)
 data_2 = deque(maxlen=max_len)
 data_3 = deque(maxlen=max_len)
+
 full_data = {"D1": [], "D2": [], "D3": []}
 plot_index = [0]
 is_paused = [False]
 
-#Tkinter GUI Setup
+# Tkinter Setup
 root = tk.Tk()
-root.title("3D Real-Time Data Plotter")
+root.title("📈 Real-Time Data Plotter")
 
-#Create Matplotlib 3D Figure
-fig = plt.figure(figsize=(8, 6))
-ax = fig.add_subplot(111, projection='3d')
+#Create Matplotlib figure
+fig, axs = plt.subplots(1, 3, figsize=(15, 4))
+plt.subplots_adjust(bottom=0.25)
 
-ax.set_xlabel('D1 (float)')
-ax.set_ylabel('D2 (int)')
-ax.set_zlabel('D3 (int)')
-ax.set_title('3D Real-Time Plot')
+lines = [
+    axs[0].plot([], [])[0],
+    axs[1].plot([], [])[0],
+    axs[2].plot([], [])[0]
+]
 
-line3d, = ax.plot([], [], [], lw=2, marker='o', color='royalblue')
+titles = ['D1 (float)', 'D2 (int)', 'D3 (int)']
+for i, ax in enumerate(axs):
+    ax.set_xlim(0, max_len)
+    ax.set_title(titles[i])
+    ax.grid(True)
 
-#Embed Figure in Tkinter
+# === Embed Matplotlib plot in Tkinter ===
 canvas = FigureCanvasTkAgg(fig, master=root)
 canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-#Control Frame
+# Control Frame
 control_frame = ttk.Frame(root)
 control_frame.pack(fill=tk.X, pady=10)
 
 def toggle_pause():
     is_paused[0] = not is_paused[0]
     btn_pause.config(text="▶️ Resume" if is_paused[0] else "⏸️ Pause")
-    label_status.config(text="Status: Paused" if is_paused[0] else "Status: Running")
 
 btn_pause = ttk.Button(control_frame, text="⏸️ Pause", command=toggle_pause)
 btn_pause.pack(side=tk.LEFT, padx=10)
@@ -75,7 +79,6 @@ btn_pause.pack(side=tk.LEFT, padx=10)
 label_status = ttk.Label(control_frame, text="Status: Running")
 label_status.pack(side=tk.LEFT)
 
-#Keyboard Shortcut
 def on_key_press(event):
     if event.char == " ":
         toggle_pause()
@@ -85,7 +88,10 @@ root.bind("<Key>", on_key_press)
 #Animation update function
 def update(frame):
     if is_paused[0]:
-        return line3d,
+        label_status.config(text="Status: Paused")
+        return lines
+    else:
+        label_status.config(text="Status: Running")
 
     if plot_index[0] >= len(full_data["D1"]):
         try:
@@ -96,12 +102,12 @@ def update(frame):
                 if ser.in_waiting:
                     line = ser.readline().decode(errors='ignore').strip()
                 else:
-                    return line3d,
+                    return lines
 
             parsed = json.loads(line)
             if not all(k in parsed for k in ["D1", "D2", "D3"]):
                 print("Invalid data format")
-                return line3d,
+                return lines
 
             full_data["D1"] = parsed["D1"]
             full_data["D2"] = parsed["D2"]
@@ -111,7 +117,7 @@ def update(frame):
 
         except Exception as e:
             print(f"Error parsing data: {e}")
-            return line3d,
+            return lines
 
     try:
         i = plot_index[0]
@@ -125,21 +131,21 @@ def update(frame):
         data_2.append(val2)
         data_3.append(val3)
 
-        line3d.set_data(data_1, data_2)
-        line3d.set_3d_properties(data_3)
-
-        ax.relim()
-        ax.autoscale_view()
+        for j, data in enumerate([data_1, data_2, data_3]):
+            lines[j].set_data(range(len(data)), list(data))
+            axs[j].set_xlim(0, max_len)
+            axs[j].relim()
+            axs[j].autoscale_view()
 
         plot_index[0] += 1
     except Exception as e:
-        print(f"Frame error: {e}")
+        print(f" Frame error: {e}")
 
-    return line3d,
+    return lines
 
-#Start Animation
+#Start animation
 ani = animation.FuncAnimation(fig, update, interval=100)
 canvas.draw()
 
-#Launch GUI
+#Launch the GUI
 root.mainloop()
