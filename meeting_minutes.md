@@ -1,3 +1,52 @@
+# Meeting 2025-06-17
+
+Location: A3.2.08 Time: 11:30 am
+
+Minutes Made by Smit
+
+- Participants:
+- Varshini Barallu Manjunath
+- Rohith Joy
+- Murtuza Udaipurvala
+- Abdul Manaf Mansoor
+- Anisha Bhanderi
+- Smit Patel
+- Professor Mink
+
+
+
+- Coil wire diameter calculation were presented by murtaza.
+  Professor said calculation seems correct but also calculate inductance and time constant for wire diameter.
+
+  Feedback by professor on presentation and slides.
+
+  Introductory slides and presentation
+    
+
+- First part of presentation and slides were good.
+- Phase slides were good but have been improved by adding key points.
+- In simulation formula symbols were missing. (eg. for turns write N.)
+- Not proper explaination for the data for eg. Coil inner radius and coil length.
+  Explain values in image with arrow mark so everybody can understand.
+- How to calculate force on marble explain this part in slide.
+- In matlab simulation slide explain what final values are we getting and add explaination for velocity
+  and position block with marking.
+ - For coil wire optimization it coulbe better if photo of coil and marble accleration were provided
+   at the beginning.
+ - Title of STM32 should not be reprogramming.
+ - For data visualization pictures could be better.
+ - Coil carrier design will not work because of coil mount. Marble will not comes out from coil.
+
+   Overall feedback by prefessor on presentation.
+
+- Explain content of slides properly and give enough time to read slides.
+- For 15 mins of presentation there should be 12 slides.
+- If all are agree then we can do small presentation before final one to get feedback from professor.
+
+  Next week's Agenda and meeting minutes will be done by Abdul Manaf. He will also give a short overview of the agenda at the beginning (2 to 3min)
+
+
+   
 # Intermediate meeting  2025-06-15
 
 Location: Steinkaute , Friedberg Time: 1 pm
