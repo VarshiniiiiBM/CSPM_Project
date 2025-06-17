@@ -1,4 +1,4 @@
-# Intermediate  2025-06-15
+# Intermediate meeting  2025-06-15
 
 Location: Steinkaute , Friedberg Time: 1 pm
 
