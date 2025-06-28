@@ -1,6 +1,6 @@
-# Agenda meeting 2025-07-02
+# Agenda meeting 2025-07-01
 
-Meeting Time: 02.07.2025, 10 am;
+Meeting Time: 01.07.2025, 10 am;
 Location: A3.2.08
 
 
@@ -21,7 +21,7 @@ Tasks Done This Week:
 
 *Smit: Coil wire diameter calculation and new simulation design.
 
-*Murtuza:  Will be updated  soon.
+*Murtuza:  Inductance calculation and stm32 code for sending json data in array format.
 
 On the day of the meeting: 
 
