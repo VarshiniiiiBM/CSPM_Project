@@ -1,3 +1,38 @@
+# Agenda meeting 2025-07-02
+
+Meeting Time: 02.07.2025, 10 am;
+Location: A3.2.08
+
+
+Participants:
+- Varshini Barallu Manjunath
+- Murtuza Udaipurvala
+- Rohith Joy
+- Anisha Bhanderi
+- Manaf Mansoor
+- Smit Patel
+- Prof. Mink
+
+Tasks Done This Week:
+
+*Rohith and Varshini:  Coil Redesign
+
+*Manaf and Anisha: Development of wireless communication between the STM board and PC for data transfer, with potential chart integration in the dashboard.
+
+*Smit: Coil wire diameter calculation and new simulation design.
+
+*Murtuza:  Will be updated  soon.
+
+On the day of the meeting: 
+
+*10.00 - 10.35 - Everybody will explain about their tasks done in the last week.
+
+*10.35 - 10.50 - Any doubts or suggestions.
+
+*10.50 - 11.00 – To Do list (Discussion within the group) 
+
+
+
 # Agenda meeting 2025-06-03
 
 Meeting Time: 03.06.2025, 10 am;
