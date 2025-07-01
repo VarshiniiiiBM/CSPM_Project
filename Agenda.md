@@ -19,7 +19,7 @@ Tasks Done This Week:
 
 *Manaf and Anisha: Development of wireless communication between the STM board and PC for data transfer, with potential chart integration in the dashboard.
 
-*Smit: Coil wire diameter calculation and new simulation design.
+*Smit: Coil wire diameter calculation.
 
 *Murtuza:  Inductance calculation and stm32 code for sending json data in array format.
 
