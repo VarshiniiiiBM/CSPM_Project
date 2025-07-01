@@ -21,6 +21,7 @@ Participants:
 -Professor Mink
 
 
+
 Discussed Topics
 
 1. Coil Inductance Calculation
@@ -29,17 +30,22 @@ Discussed methods to verify the accuracy of inductance measurements:
 - Use of FEMM was discussed.
 - Possibility of using an LCR meter was also discussed.
 Professor inquired about expected accuracy of the measurements; suggested that an accuracy of ±20% is acceptable.
+
 Professor emphasized the need to consider the permeability of the marble in calculations.
+
 
 2. 3D Printing and Accelerator Design
 
 Professor reiterated the goal: to develop an efficient accelerator, not just focus on the tube design.
+
 Advised to begin prototyping the accelerator.
 The current 3D modular design presented is having 75 to 85% success rate.
+
 In the remodeling discussion:
 - Emphasized the need to consider space for the marble to come to rest.
 - Discussed forces acting on a marble at rest.
 - Demonstrated a basic graph and force equation to estimate the minimum current needed to move the marble from rest.
+
   
 3. Data Visualization
    
@@ -50,6 +56,7 @@ Professor provided the following suggestions:
 - Time axis should be in milliseconds (ms).
 - Graph should reset for each new data chunk to avoid overcrowding.
 Professor agreed on the use of wireless communication for data transfer but emphasized that the accelerator development should be prioritized.
+
 
 4. Presentation Guidelines
 
@@ -64,13 +71,16 @@ Clarified usage of unit notations:
 In mail, it was clarified by the professor regarding the usage of brackets.
 - Detailed explanation on bracket usage is available in Chapter 7.1 / Page 15 of the PDF link uploaded to GitHub.
 
+
 5. Next Steps & Meeting Schedule
 
 Due to upcoming exams:
 - Next meeting to be postponed.
 Professor will be on holiday from July 25 for 3 weeks.
 Last available date for meeting before vacation: July 22.
+
 Target: Have the accelerator and prototype ready by then.
+
 Suggested to contact Shami for equipment requirements.
 
 
