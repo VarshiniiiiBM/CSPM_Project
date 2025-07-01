@@ -26,11 +26,11 @@ Discussed Topics
 2. 3D Printing and Accelerator Design
 
 * Professor reiterated the goal: to develop an efficient accelerator, not just focus on the tube design.
-
 * Advised to begin prototyping the accelerator.
 * The current 3D modular design presented is having 75 to 85% success rate.
 
-* In the remodeling discussion:
+In the remodeling discussion:
+
 * Emphasized the need to consider space for the marble to come to rest.
 * Discussed forces acting on a marble at rest.
 * Demonstrated a basic graph and force equation to estimate the minimum current needed to move the marble from rest.
