@@ -7,17 +7,24 @@ Minutes Made by Abdul Manaf Mansoor.
 Participants:
 
 -Varshini Barallu Manjunath
+
 -Rohith Joy
+
 -Murtuza Udaipurvala
+
 -Abdul Manaf Mansoor
+
 -Anisha Bhanderi
+
 -Smit Patel
+
 -Professor Mink
 
 
 Discussed Topics
 
 1. Coil Inductance Calculation
+   
 Discussed methods to verify the accuracy of inductance measurements:
 - Use of FEMM was discussed.
 - Possibility of using an LCR meter was also discussed.
@@ -25,6 +32,7 @@ Professor inquired about expected accuracy of the measurements; suggested that a
 Professor emphasized the need to consider the permeability of the marble in calculations.
 
 2. 3D Printing and Accelerator Design
+
 Professor reiterated the goal: to develop an efficient accelerator, not just focus on the tube design.
 Advised to begin prototyping the accelerator.
 The current 3D modular design presented is having 75 to 85% success rate.
@@ -34,6 +42,7 @@ In the remodeling discussion:
 - Demonstrated a basic graph and force equation to estimate the minimum current needed to move the marble from rest.
   
 3. Data Visualization
+   
 Professor provided the following suggestions:
 - Adjust x-axis scaling to reflect realistic project values.
 - Replace current pulse animation of capacitor with a capacitor energy graph.
@@ -43,6 +52,7 @@ Professor provided the following suggestions:
 Professor agreed on the use of wireless communication for data transfer but emphasized that the accelerator development should be prioritized.
 
 4. Presentation Guidelines
+
 All missing PowerPoint presentations should be uploaded to Hessenbox.
 Reviewed checklist on GitHub regarding SI unit standards:
 - Emphasized strict adherence in all presentations and reports.
@@ -55,6 +65,7 @@ In mail, it was clarified by the professor regarding the usage of brackets.
 - Detailed explanation on bracket usage is available in Chapter 7.1 / Page 15 of the PDF link uploaded to GitHub.
 
 5. Next Steps & Meeting Schedule
+
 Due to upcoming exams:
 - Next meeting to be postponed.
 Professor will be on holiday from July 25 for 3 weeks.
