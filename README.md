@@ -39,6 +39,8 @@ List of items borrowed from Fabian to be returned at the end of the project:
 - KY-035 Hall Sensors
 - 2x Board STM32L476 Nucleo, 1x USB Cable
 - Capacitor 22mF, 50V and Capacitor bank 20x1.5mF, 25V (2025-06-12)
+- Lab Power Supply PeakTech 6226 (2025-07-01)
 
+The project grades will only be entered into the examination system when all parts have been returned in good condition!
 
 
