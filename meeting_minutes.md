@@ -21,11 +21,11 @@ Discussed Topics
 * Use of FEMM was discussed.
 * Possibility of using an LCR meter was also discussed.
 * Professor inquired about expected accuracy of the measurements; suggested that an accuracy of ±20% is acceptable.
-* Professor emphasized the need to consider the permeability of the marble in calculations.
+* Professor emphasized that the marble's permeability will have a significant influence on the inductance (increase of inductance by 20...50%, maybe even more). So it does not make sense to calculate an "accurate" value for inductance without considering the marble. Consequence: A rough estimate of the inductance is sufficient. Basic inductance estimation formulas (e.g. https://en.wikipedia.org/wiki/Solenoid or https://de.wikipedia.org/wiki/Zylinderspule ) can be used.
 
 2. 3D Printing and Accelerator Design
 
-* Professor reiterated the goal: to develop an efficient accelerator, not just focus on the tube design.
+* Professor reiterated the goal: to develop an efficient accelerator, not just focus on the tube design. Tasks that must be completed to pass the project are listed in the pdf "Marble Accelerator Project" (p.3 "Tasks") which was presented in the Kickoff-Meeting and uploaded to Moodle at the beginning of the project in april.
 * Advised to begin prototyping the accelerator.
 * The current 3D modular design presented is having 75 to 85% success rate.
 
@@ -43,7 +43,7 @@ In the remodeling discussion:
 * Position graph should be in centimeters (cm), not meters.
 * Time axis should be in milliseconds (ms).
 * Graph should reset for each new data chunk to avoid overcrowding.
-* Professor agreed on the use of wireless communication for data transfer but emphasized that the accelerator development should be prioritized.
+* Professor agreed on the use of wireless communication for data transfer but emphasized that the accelerator development must be prioritized.
 
 4. Presentation Guidelines
 
@@ -70,7 +70,7 @@ Due to upcoming exams:
 * Professor will be on holiday from July 25 for 3 weeks.
 * Last available date for meeting before vacation: July 22.
 * Target: Have the accelerator and prototype ready by then.
-* Suggested to contact Shami for equipment requirements.
+* Suggested to contact Shami for equipment requirements. Remark (Fabian): Shami has been informed that he can supply copper wire of a certain length /cross-section previously calculated by you (e.g. "20m of wire with 0.75mm diameter) for building accelerators. He will not issue any other components without prior consultation with me. Last opportunity to discuss this before my vacation: July 23rd.
 
 
 # Meeting 2025-06-17
