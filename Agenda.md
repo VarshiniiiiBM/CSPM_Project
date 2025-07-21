@@ -1,3 +1,29 @@
+# Agenda meeting 2025-07-21
+
+Meeting Time: 21.07.2025, 12:30 pm;
+Location: Lab (Room No)
+
+
+Participants:
+- Varshini Barallu Manjunath
+- Murtuza Udaipurvala
+- Rohith Joy
+- Manaf Mansoor
+- Smit Patel
+- Prof. Mink
+
+Tasks Done This Week:
+
+*Rohith and Varshini:  Coil Redesign Model
+
+On the day of the meeting: 
+
+*12.30 - 1.00 - Finallizing the Coil Model Design and Discussion of future steps
+
+*1.00 - 1.15 - Indutance Mesurement and Winding Machine Demonstration
+
+*1.15 - 1.30 - Discussion and Question to professor. 
+
 # Agenda meeting 2025-07-01
 
 Meeting Time: 01.07.2025, 10 am;
