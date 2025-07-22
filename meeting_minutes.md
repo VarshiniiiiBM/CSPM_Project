@@ -1,3 +1,46 @@
+# Meeting 2025-07-22
+
+Location: Lab Time: 12:30 am
+
+Minutes Made by Abdul Manaf Mansoor.
+
+- Participants:
+- Varshini Barallu Manjunath
+- Rohith Joy
+- Murtuza Udaipurvala
+- Abdul Manaf Mansoor
+- Anisha Bhanderi
+- Smit Patel
+- Prof. Mink
+
+Discussed Topics
+
+1. Final Coil Model(Rohit) : Two coils will be used in the design one on the top and one on the bottom—mounted. The model will be 3D printed and ready by tomorrow. Smith and Murtuza will handle the winding process.
+  Feedback from Professor : Focus on completing the project. Get the first prototype printed and ready for testing. Might need more changes.
+
+2. Capacitor Calculation(Smith): Discussed energy calculation using capacitor formula (1/2)*C*V^2. Discussion of mechanical energy conversion. 
+   Discussion with professor : Energy efficiency is below 10% based on observations from the previous project. Work done and energy loss were calculated for a 20A current coil. Picture Attached in Hessenbox.
+   This calculation should be included in the report.
+
+3. Discussion of Work Plan (Murtuza) : Discussed work plan packages for everyone.
+              1) Extended Existing Design with new hardware:
+                  a) Motor Controller
+                  b) STM32 Board
+                  c) Python Dashboard
+                  d) Matlab Simulation
+               2) New Coil Model:
+                  a) 3D printing new model
+                  b) Winding New model
+                  c) Magnetic sensor
+
+4. Python Dashboard (Manaf) : Dashboard updated with time in Millisecond presented.
+   Feedback from Professor: The dashboard still has dummy data in seconds. The dashboard display a burst of data and then stop. The dashboard is cleared and new data is plotted when it arrives. Next demostration should
+   get data from microcontroller. This could be achieved by having a button on microcontroller that sends burst of data when it is pressed. This data is received on serial and then plotted.
+
+General : During the leave period, meetings should be held once a week, and the minutes should be updated. Lab access requires safety and security instructions to be given first by Mohammed Shaami. Everyone’s vacation
+plans should be discussed.
+
+
 # Meeting 2025-07-01
 
 Location: A3.2.08 Time: 10:00 am
