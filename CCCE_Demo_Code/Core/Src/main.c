@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include <math.h>
+#include <stdbool.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -33,7 +34,8 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define PI 3.14159265
-#define buffer_size 2048
+#define buffer_size 1024
+#define number_data_pts 100
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -52,14 +54,20 @@ extern volatile uint32_t collect_data_flag;
 
 uint8_t buffer[100]={0};
 struct data_struct {
-	float data1;
-	int data2;
+	float data1;		//find trade off between printing floats vs uint32_t
+	uint32_t data2;
 	int data3;
 };
 
-struct data_struct data_buff[buffer_size]={0};
+// Two buffers instead of circular buffer architecture.
+struct data_struct data_buffone[number_data_pts] = {0};
+struct data_struct data_bufftwo[number_data_pts] = {0};
+//struct data_struct read_buff[buffer_size] = {0};
 volatile uint32_t readp = 0;
 volatile uint32_t writep = 0;
+bool is_buffone_full = false;
+bool is_bufftwo_full = false;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -130,13 +138,17 @@ int main(void)
 //		  val2*= -1;
 //		  collect_data_flag = 0;
 //	  }
-	  if (readp != writep)
+//	  if (readp != writep)
+//	  {
+//		  //float out = (float)1;
+//		  //snprintf(buffer,80,"Acc_X_g:%f,Y_g:%d,Z_g:%d\n",out,val1++,val2);
+//		  send_data_json(&data_buff[writep++]);
+//		  writep = writep & ~buffer_size;
+//		  Usart_Transmit_Str(buffer);
+//	  }
+	  if (is_buffone_full || is_bufftwo_full)
 	  {
-		  //float out = (float)1;
-		  //snprintf(buffer,80,"Acc_X_g:%f,Y_g:%d,Z_g:%d\n",out,val1++,val2);
-		  send_data_json(&data_buff[writep++]);
-		  writep = writep & ~buffer_size;
-		  Usart_Transmit_Str(buffer);
+		  send_data_json_array();
 	  }
     /* USER CODE END WHILE */
 
@@ -356,16 +368,166 @@ void Systick_configuration(void)
 
 void send_data_json(struct data_struct* var)
 {
-	snprintf(buffer,100,"{\"Data_1\":%f,\"Data_2\":%d,\"Data_3\":%d}\n",var->data1,var->data2,var->data3);
+	snprintf(buffer,100,"{\"D1\":%u,\"D2\":%u,\"D3\":%u}\n",var->data1,var->data2,var->data3);
 }
 
 void put_data(float val1,int val2,int val3)
 {
-	data_buff[readp].data1 = (float)val1;
-	data_buff[readp].data2 = val2;
-	data_buff[readp].data3 = val3;
-	readp++;
-	readp = readp & ~buffer_size;
+	//data_buff[readp].data1 = (uint32_t)val1; type casting seems to be wrong approach for float
+	// Select the buffer
+//	uint32_t* bs_data = &val1; // stack address mostly.
+//	data_buff[readp].data1 = *bs_data;
+//	data_buff[readp].data2 = (uint32_t)val2;
+//	data_buff[readp].data3 = (uint32_t)val3; // negative values are fine.
+//	readp++;
+//	readp = readp & ~buffer_size;
+
+	static uint32_t buff_state= 0;
+	switch (buff_state)
+	{
+	case 0:
+		// Init case
+		readp = 0;
+		if (!is_buffone_full)
+		{
+			buff_state = 1;
+		}
+		else if (!is_bufftwo_full)
+		{
+			buff_state = 2;
+		}
+		else
+		{
+			buff_state = 3;
+		}
+		break;
+	case 1:
+		// Data store buff one
+		data_buffone[readp].data1 = val1;
+		data_buffone[readp].data2 = val2;
+		data_buffone[readp].data3 = val3; // negative values are fine.
+		readp++;
+		if (readp >= number_data_pts)
+		{
+			is_buffone_full = true;
+			buff_state = 0;
+		}
+		break;
+	case 2:
+		// Data store buff two
+		data_bufftwo[readp].data1 = val1;
+		data_bufftwo[readp].data2 = val2;
+		data_bufftwo[readp].data3 = val3; // negative values are fine.
+		readp++;
+		if (readp >= number_data_pts)
+		{
+			is_bufftwo_full = true;
+			buff_state = 0;
+		}
+		break;
+	case 3:
+		// both buffers are full. Wait until empty. Dont accept data case.
+		if (!is_buffone_full || !is_bufftwo_full)
+		{
+			buff_state = 0;
+		}
+		break;
+	}
+}
+
+void send_data_json_array(void)
+{
+	/* Sending data in json array format.
+	 * example: {"D1":[3123123,123124124,124124124],
+	 * 			 "D2":[31,32,33],
+	 * 			 "D3":[200,23141241241,200]
+	 * }
+	 */
+
+	//send header first
+	struct data_struct* struc_p;
+	struct data_struct* struc_sv;
+	//writep = 0 ;
+	uint8_t local_val_buff[10];
+	uint32_t buff_used = 0;
+
+	if (is_buffone_full)
+	{
+		struc_sv = data_buffone;
+		buff_used = 1;
+	}
+	else if (is_bufftwo_full)
+	{
+		struc_sv = data_bufftwo;
+		buff_used = 2;
+	}
+	else
+	{
+		return;
+	}
+
+	snprintf(buffer,100,"{\"D1\":[");
+	Usart_Transmit_Str(buffer);
+
+	struc_p = struc_sv;
+	//send data byte by byte
+	for (int i=0;i<number_data_pts;i++)
+	{
+		// data 1 float
+		snprintf(local_val_buff,10,"%f",struc_p->data1);
+		if (i<number_data_pts-1)
+		{
+			strcat(local_val_buff,",");
+		}
+		struc_p++;
+		Usart_Transmit_Str(local_val_buff);
+	}
+
+	snprintf(buffer,100,"],\"D2\":[");
+	Usart_Transmit_Str(buffer);
+
+	struc_p = struc_sv;
+	//send data byte by byte
+	for (int i=0;i<number_data_pts;i++)
+	{
+		// data 1 float
+		snprintf(local_val_buff,10,"%u",struc_p->data2);
+		if (i<number_data_pts-1)
+		{
+			strcat(local_val_buff,",");
+		}
+		struc_p++;
+		Usart_Transmit_Str(local_val_buff);
+	}
+	snprintf(buffer,100,"],\"D3\":[");
+	Usart_Transmit_Str(buffer);
+
+	struc_p = struc_sv;
+	//send data byte by byte
+	for (int i=0;i<number_data_pts;i++)
+	{
+		// data 1 float
+		snprintf(local_val_buff,10,"%i",struc_p->data3);
+		if (i<number_data_pts-1)
+		{
+			strcat(local_val_buff,",");
+		}
+		struc_p++;
+		Usart_Transmit_Str(local_val_buff);
+	}
+
+	//Footer
+	snprintf(buffer,100,"]}\n");
+	Usart_Transmit_Str(buffer);
+
+	if (buff_used == 1)
+	{
+		is_buffone_full = false;
+	}
+	else if(buff_used == 2 )
+	{
+		is_bufftwo_full = false;
+	}
 }
 /* USER CODE END 4 */
 

@@ -41,8 +41,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-volatile uint32_t send_data_flag=1;
-volatile uint32_t collect_data_flag=0;
+volatile uint32_t send_data_flag=0;
+volatile uint32_t send_data_on_uart=0;
 volatile uint32_t ms_counter=0;
 volatile uint32_t us_counter=0;
 volatile uint32_t sec_counter=0;
@@ -196,22 +196,23 @@ void SysTick_Handler(void)
 	//	if (us_counter >=10)
 	//	{
 	//us_counter = 0; // one millisecond
+	// Maybe reduce this to 10ms. No need for 1ms
 	ms_counter++;
-	if (ms_counter%100==0)
+	if (send_data_flag)
 	{
-		if (send_data_flag)
+		if (ms_counter%10==0)
 		{
 			send_data_flag = 0;
-		}
-		else
-		{
-			send_data_flag = 1;
 		}
 	}
 	if (ms_counter>=1000)
 	{
 		ms_counter = 0; // One second.
 		sec_counter ++;
+		//if (sec_counter%5 == 0)
+		{
+			send_data_flag = 1;
+		}
 	}
 	//	}
   /* USER CODE END SysTick_IRQn 0 */
@@ -236,7 +237,7 @@ void TIM3_IRQHandler(void)
   /* USER CODE BEGIN TIM3_IRQn 0 */
 	if(send_data_flag)
 	{
-		put_data((float)1,val1++,val2);
+		put_data((float)1.61,val1++,val2);
 		val2*= -1;
 	}
   /* USER CODE END TIM3_IRQn 0 */
