@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+websockets
+pyqt6
+matplotlib
+plotly
+pyngrok
