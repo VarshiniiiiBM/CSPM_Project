@@ -18,8 +18,8 @@ from fastapi.responses import HTMLResponse
 import uvicorn
 
 # ==== ngrok & QR ====
-from pyngrok import ngrok, conf
-import qrcode
+#from pyngrok import ngrok, conf
+#import qrcode
 
 # =======================
 # Serial config
@@ -274,31 +274,31 @@ class ChartWidget(QtWidgets.QWidget):
     #     print(Latency)
 
 # ---- QR Code Window ----
-class QRWindow(QtWidgets.QWidget):
-    def __init__(self, url: str):
-        super().__init__()
-        self.setWindowTitle("Mobile Access QR Code")
-        self.resize(300, 350)
+# class QRWindow(QtWidgets.QWidget):
+#     def __init__(self, url: str):
+#         super().__init__()
+#         self.setWindowTitle("Mobile Access QR Code")
+#         self.resize(300, 350)
 
-        layout = QtWidgets.QVBoxLayout(self)
+#         layout = QtWidgets.QVBoxLayout(self)
 
-        qr = qrcode.QRCode(box_size=6, border=2)
-        qr.add_data(url)
-        qr.make(fit=True)
-        img = qr.make_image(fill_color="black", back_color="white")
-        img.save("qr.png")
+#         qr = qrcode.QRCode(box_size=6, border=2)
+#         qr.add_data(url)
+#         qr.make(fit=True)
+#         img = qr.make_image(fill_color="black", back_color="white")
+#         img.save("qr.png")
 
-        pixmap = QPixmap("qr.png")
+#         pixmap = QPixmap("qr.png")
 
-        label = QtWidgets.QLabel()
-        label.setPixmap(pixmap)
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+#         label = QtWidgets.QLabel()
+#         label.setPixmap(pixmap)
+#         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        url_label = QtWidgets.QLabel(f"Scan to open:\n{url}")
-        url_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+#         url_label = QtWidgets.QLabel(f"Scan to open:\n{url}")
+#         url_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        layout.addWidget(label)
-        layout.addWidget(url_label)
+#         layout.addWidget(label)
+#         layout.addWidget(url_label)
 
 # ---- Main ----
 def main():
@@ -313,11 +313,11 @@ def main():
     server_thread.start()
 
     # 🔑 Set ngrok auth token in code (replace with your token!)
-    conf.get_default().auth_token = "30X0Tv37FLXwKLkkbBwXvkFk4Vs_c2aEHqsgQZux91tX4q47"    #TOKEN
+    #conf.get_default().auth_token = "30X0Tv37FLXwKLkkbBwXvkFk4Vs_c2aEHqsgQZux91tX4q47"    #TOKEN
 
     # Start ngrok tunnel
-    public_url = ngrok.connect(8000, "http").public_url.replace("http:", "https:")
-    print(f" ngrok tunnel active: {public_url}")
+    #public_url = ngrok.connect(8000, "http").public_url.replace("http:", "https:")
+    #print(f" ngrok tunnel active: {public_url}")
 
     app_qt = QtWidgets.QApplication(sys.argv)
 
@@ -327,15 +327,15 @@ def main():
     w.show()
 
     # Show QR code in separate window
-    qr_win = QRWindow(public_url)
-    qr_win.show()
+    #qr_win = QRWindow(public_url)
+    #qr_win.show()
 
     serial_thread.data_received.connect(w.update_data)
     serial_thread.start()
 
     def on_exit():
         serial_thread.stop()
-        ngrok.kill()   # close ngrok on exit
+        #ngrok.kill()   # close ngrok on exit
 
     app_qt.aboutToQuit.connect(on_exit)
     sys.exit(app_qt.exec())
