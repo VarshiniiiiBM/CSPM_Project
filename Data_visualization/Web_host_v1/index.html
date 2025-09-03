@@ -27,8 +27,10 @@
       };
     </script> -->
     <script>
-let protocol = location.protocol === "https:" ? "wss://" : "ws://";
-let ws = new WebSocket(protocol + location.host + "/ws");
+let url = "ws://" + location.host + "/ws"
+//document.write(url);
+let ws = new WebSocket(url);
+
 
 // Generate X-axis values (0, 0.1, 0.2, ..., 9.9)
 let x_vals = Array.from({length: 100}, (_, i) => (i * 0.1).toFixed(1));
