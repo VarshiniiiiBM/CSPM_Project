@@ -3,13 +3,13 @@ import json
 import serial
 import time
 import ctypes
-import math
+#import math
 import asyncio
 import threading
 
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtCharts import QChart, QChartView, QLineSeries, QValueAxis
-from PyQt6.QtGui import QPainter, QFont, QPixmap
+from PyQt6.QtGui import QPainter, QFont
 from PyQt6.QtCore import Qt
 
 # ==== FastAPI imports ====
@@ -17,17 +17,13 @@ from fastapi import FastAPI, WebSocket
 from fastapi.responses import HTMLResponse
 import uvicorn
 
-# ==== ngrok & QR ====
-#from pyngrok import ngrok, conf
-#import qrcode
 
 # =======================
 # Serial config
-SERIAL_PORT = 'COM5'   # Update port
+SERIAL_PORT = 'COM3'   # Update port
 BAUD_RATE = 115200
 # =======================
 
-# ---- FastAPI App ----
 app = FastAPI()
 clients = set()
 
@@ -40,6 +36,7 @@ async def get():
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     clients.add(websocket)
+    #print("added client: " + str(websocket.client.host) + ":" + str(websocket.client.port))
     try:
         while True:
             await websocket.receive_text()  # keep alive
@@ -51,7 +48,9 @@ async def websocket_endpoint(websocket: WebSocket):
 async def broadcast(data: dict):
     """Send JSON data to all connected WebSocket clients"""
     living = set()
+    #print("broadcast to...")
     for ws in clients:
+        #print("client " + ws.client.host)
         try:
             await ws.send_json(data)
             living.add(ws)
@@ -99,7 +98,7 @@ class SerialReader(QtCore.QThread):
                     try:
                         data = json.loads(line_str)
                         if all(len(data.get(k, [])) == 100 for k in ["D1", "D2", "D3"]):
-                            print("[Received JSON]:", data)  #PRINT JSON INPUT VALUES 
+                            #print("[Received JSON]:", data)  #PRINT JSON INPUT VALUES 
                             self.data_received.emit(data)
                             time.sleep(0.05) # original delay
                             # time.sleep(3)
@@ -261,10 +260,11 @@ class ChartWidget(QtWidgets.QWidget):
             "D3": d3,
             "D4": d4   # add D4
         }
-            if loop.is_running():
-                asyncio.ensure_future(broadcast(payload)) #data changed to payload
-            else:
-                loop.run_until_complete(broadcast(payload)) #data changed to payload
+            #DOES NOT WORK!!!
+            #if loop.is_running():
+            #    asyncio.ensure_future(broadcast(payload))
+            #else:
+            loop.run_until_complete(broadcast(payload)) 
           
         except RuntimeError:
             pass
@@ -272,33 +272,6 @@ class ChartWidget(QtWidgets.QWidget):
     #     t1 = time.time()
     #     Latency= round((t1 - t0) * 1000, 1)  # in milliseconds
     #     print(Latency)
-
-# ---- QR Code Window ----
-# class QRWindow(QtWidgets.QWidget):
-#     def __init__(self, url: str):
-#         super().__init__()
-#         self.setWindowTitle("Mobile Access QR Code")
-#         self.resize(300, 350)
-
-#         layout = QtWidgets.QVBoxLayout(self)
-
-#         qr = qrcode.QRCode(box_size=6, border=2)
-#         qr.add_data(url)
-#         qr.make(fit=True)
-#         img = qr.make_image(fill_color="black", back_color="white")
-#         img.save("qr.png")
-
-#         pixmap = QPixmap("qr.png")
-
-#         label = QtWidgets.QLabel()
-#         label.setPixmap(pixmap)
-#         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-#         url_label = QtWidgets.QLabel(f"Scan to open:\n{url}")
-#         url_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-#         layout.addWidget(label)
-#         layout.addWidget(url_label)
 
 # ---- Main ----
 def main():
@@ -312,13 +285,6 @@ def main():
     server_thread = threading.Thread(target=start_server, daemon=True)
     server_thread.start()
 
-    # 🔑 Set ngrok auth token in code (replace with your token!)
-    #conf.get_default().auth_token = "30X0Tv37FLXwKLkkbBwXvkFk4Vs_c2aEHqsgQZux91tX4q47"    #TOKEN
-
-    # Start ngrok tunnel
-    #public_url = ngrok.connect(8000, "http").public_url.replace("http:", "https:")
-    #print(f" ngrok tunnel active: {public_url}")
-
     app_qt = QtWidgets.QApplication(sys.argv)
 
     serial_thread = SerialReader(SERIAL_PORT, BAUD_RATE)
@@ -326,16 +292,11 @@ def main():
     w.resize(800, 600)
     w.show()
 
-    # Show QR code in separate window
-    #qr_win = QRWindow(public_url)
-    #qr_win.show()
-
     serial_thread.data_received.connect(w.update_data)
     serial_thread.start()
 
     def on_exit():
         serial_thread.stop()
-        #ngrok.kill()   # close ngrok on exit
 
     app_qt.aboutToQuit.connect(on_exit)
     sys.exit(app_qt.exec())
