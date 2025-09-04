@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdbool.h>
+#include "string.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,7 +53,7 @@ UART_HandleTypeDef huart2;
 extern volatile uint32_t send_data_flag;
 extern volatile uint32_t collect_data_flag;
 
-uint8_t buffer[100]={0};
+char buffer[100]={0};
 struct data_struct {
 	float data1;		//find trade off between printing floats vs uint32_t
 	uint32_t data2;
@@ -76,9 +77,10 @@ static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
-void Usart_Transmit_Str(uint8_t *msg);
+void Usart_Transmit_Str(char *msg);
 void Systick_configuration(void);
-void send_data_json(struct data_struct *var);
+//void send_data_json(struct data_struct *var);
+void send_data_json_array(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -343,7 +345,7 @@ uint16_t GSMSendChar (uint8_t chr,uint32_t Timeout)
 	return 0;
 }
 
-void Usart_Transmit_Str(uint8_t *msg)
+void Usart_Transmit_Str(char *msg)
 {
 	uint16_t i = 0;
 	while(msg[i] != '\0')
@@ -366,10 +368,10 @@ void Systick_configuration(void)
 	}
 }
 
-void send_data_json(struct data_struct* var)
-{
-	snprintf(buffer,100,"{\"D1\":%u,\"D2\":%u,\"D3\":%u}\n",var->data1,var->data2,var->data3);
-}
+//void send_data_json(struct data_struct* var)
+//{
+//	snprintf(buffer,100,"{\"D1\":%u,\"D2\":%u,\"D3\":%u}\n",var->data1,var->data2,var->data3);
+//}
 
 void put_data(float val1,int val2,int val3)
 {
@@ -448,7 +450,7 @@ void send_data_json_array(void)
 	struct data_struct* struc_p;
 	struct data_struct* struc_sv;
 	//writep = 0 ;
-	uint8_t local_val_buff[10];
+	char local_val_buff[10];
 	uint32_t buff_used = 0;
 
 	if (is_buffone_full)
@@ -491,7 +493,7 @@ void send_data_json_array(void)
 	for (int i=0;i<number_data_pts;i++)
 	{
 		// data 1 float
-		snprintf(local_val_buff,10,"%u",struc_p->data2);
+		snprintf(local_val_buff,10,"%u",(unsigned int)struc_p->data2);
 		if (i<number_data_pts-1)
 		{
 			strcat(local_val_buff,",");
