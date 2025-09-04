@@ -44,10 +44,9 @@ List of items borrowed from Fabian to be returned at the end of the project:
 The project grades will only be entered into the examination system when all parts have been returned in good condition!
 
 ## Presentation And Report 
-Report Submission Date : 19th Semptember
-Presentation Submission Date : 21st Semptember
-Presentation Data : 23rd Semptember 
-
-Presentation Format: Total 20 min, including 5 mins for project video. 
+- Report Submission Date : 19th Semptember
+- Presentation Submission Date : 21st Semptember
+- Presentation Data : 23rd Semptember 
+- Presentation Format: Total 20 min, including 5 mins for project video. 
 
 
