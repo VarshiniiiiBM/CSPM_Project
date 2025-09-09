@@ -118,6 +118,7 @@ class SerialReader:
     def __init__(self, port, baudrate):
         self.data_received = threading.Semaphore(0)
         self.data_consumed = threading.Semaphore(1)
+        self.thread = threading.Thread(target = self.run)
         self.port = port
         self.baudrate = baudrate
         self.running = True
@@ -160,6 +161,9 @@ class SerialReader:
             except Exception as e:
                 print(f"Serial read error: {e}")
                 break
+            
+    def start(self):
+        self.thread.start()            
 
     def stop(self):
         self.running = False
