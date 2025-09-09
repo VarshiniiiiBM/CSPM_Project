@@ -28,4 +28,4 @@ Controlled by the debuglevel variable at the top of the script:
 
 3 → DEBUG + above (most verbose, includes raw details)
 
-This allows you to adjust verbosity without editing multiple lines of code.
+This allows to adjust verbosity without editing multiple lines of code.
