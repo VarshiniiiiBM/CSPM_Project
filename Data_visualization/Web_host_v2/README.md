@@ -19,8 +19,13 @@ This makes it easier to filter messages.
 
 ## Debug levels
 Controlled by the debuglevel variable at the top of the script:
+
 0 → Only ERROR messages (minimal logging)
+
 1 → WARNING + ERROR
+
 2 → INFO + above
+
 3 → DEBUG + above (most verbose, includes raw details)
+
 This allows you to adjust verbosity without editing multiple lines of code.
