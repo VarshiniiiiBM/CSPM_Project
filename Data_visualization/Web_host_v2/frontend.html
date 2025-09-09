@@ -1,3 +1,32 @@
+<!-- 
+  Marble Accelerator - Real-time Visualization
+  ============================================
+
+  Description:
+    This HTML file serves as the frontend for the Marble Accelerator project.
+    It connects to a FastAPI WebSocket server running at "/ws" and displays
+    real-time charts of data received from the hardware.
+
+  Features:
+    - Uses Plotly.js to render four live-updating charts.
+    - Displays:
+        D1: Raw sensor data 1
+        D2: Raw sensor data 2
+        D3: Raw sensor data 3
+        D4: Calculated value from D1
+    - Automatically connects using "ws://" or "wss://" depending on protocol.
+    - Updates charts continuously as new JSON messages arrive.
+
+  Usage:
+    1. Ensure the backend server is running (FastAPI + WebSocket).
+    2. Open this file in a web browser (or via "http://localhost:8000/" if served).
+    3. Observe real-time sensor data visualization.
+
+  UI:
+    - Title and short description at the top.
+    - Four charts rendered using Plotly.js.
+    - Each chart is labeled with X-axis (time) and Y-axis (sensor values).
+-->
 <!DOCTYPE html>
 <html>
   <head>
@@ -59,3 +88,4 @@ ws.onmessage = (event) => {
 
   </body>
 </html>
+
