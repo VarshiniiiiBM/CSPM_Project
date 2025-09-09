@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Marble Accelerator</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  </head>
+  <body>
+    <h2>Real-time Marble Accelerator</h2>
+    <div id="chart1"></div>
+    <div id="chart2"></div>
+    <div id="chart3"></div>
+    <div id="chart4"></div>
+
+    <script>
+let protocol = location.protocol === "https:" ? "wss://" : "ws://";
+let ws = new WebSocket(protocol + location.host + "/ws");
+
+// Generate X-axis values (0, 0.1, 0.2, ..., 9.9)
+let x_vals = Array.from({length: 100}, (_, i) => (i * 0.1).toFixed(1));
+//ws.send("hello world from browser")
+
+ws.onmessage = (event) => {
+    let data = JSON.parse(event.data);
+    let d1 = data.D1 || [];
+    let d2 = data.D2 || [];
+    let d3 = data.D3 || [];
+    let d4 = data.D4 || [];  //D4 added for KE
+
+
+    const layout_template = (title, x_label, y_label) => ({
+        title: title,
+        xaxis: {
+            title: x_label,
+            showline: true,
+            linecolor: 'black',
+            linewidth: 2,
+            ticks: 'outside',
+            showgrid: true
+        },
+        yaxis: {
+            title: y_label,
+            showline: true,
+            linecolor: 'black',
+            linewidth: 2,
+            ticks: 'outside',
+            showgrid: true
+        }
+    });
+
+
+    Plotly.newPlot("chart1", [{ x: x_vals, y: d1, type: "scatter" }], layout_template("D1", "Time (ms)", "D1 values"));
+    Plotly.newPlot("chart2", [{ x: x_vals, y: d2, type: "scatter" }], layout_template("D2", "Time (ms)", "D2 values"));
+    Plotly.newPlot("chart3", [{ x: x_vals, y: d3, type: "scatter" }], layout_template("D3", "Time (ms)", "D3 values"));
+    Plotly.newPlot("chart4", [{ x: x_vals, y: d4, type: "scatter" }], layout_template("D4", "Time (ms)", "D4 values"));
+
+};
+</script>
+
+
+  </body>
+</html>
