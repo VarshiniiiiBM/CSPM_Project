@@ -1,3 +1,25 @@
+# Meeting 2025-09-04
+
+Location: A4.U1.21 Time: 13:00
+
+Minutes Made by Anisha
+
+- Participants:
+- Abdul Manaf Mansoor
+- Anisha Bhanderi
+- Murtuza Udaipurvala
+
+Suggestions by professor:
+
+* Timestamp should also be sent along with the data.
+* Add meaningful comments in the code for readability and easy understanding.
+* Remove the code, which has been used for UI freezing scenario.
+* Rename files with descriptive names, so it can be known that what is there in the file.
+* Separate python programs for both, Webserver and QT charts. 
+* Web version should be preferred for further changes.
+* Add debug level and make debug info output dependent on assigned debug level.
+* Remove all warnings from STM32 code and upload complete code on Git.
+
 # Meeting 2025-07-22
 
 Location: Lab Time: 12:30 am
@@ -479,4 +501,5 @@ Tasks todo until the next meeting:
 
 
 Next meeting: 14th May at 2:00 PM
+
 
