@@ -223,7 +223,7 @@ int main(void)
 	  {
 		  send_data_json_array();
 	  }
-	  HAL_Delay(1);
+	  //HAL_Delay(1);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

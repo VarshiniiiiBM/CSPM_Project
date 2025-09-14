@@ -34,6 +34,7 @@ extern "C" {
 #include <stdbool.h>
 #include "string.h"
 #include <stdio.h>
+#include "stdlib.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -59,8 +60,10 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define tim2_period 1000-1
-#define tim1_period 1000-1
+#define tim2_period 10000-1
+#define tim1_period 10000-1
+#define tim2_duty 5000-1
+#define tim1_duty 5000-1
 #define B1_Pin GPIO_PIN_13
 #define B1_GPIO_Port GPIOC
 #define USART_TX_Pin GPIO_PIN_2

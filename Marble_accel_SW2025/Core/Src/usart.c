@@ -39,6 +39,12 @@ volatile uint32_t readp = 0;
 volatile uint32_t writep = 0;
 bool is_buffone_full = false;
 bool is_bufftwo_full = false;
+
+uint8_t serial_buffer[100];
+uint32_t serial_bufferp = 0;
+bool valid_flag = false;
+
+static void serial_parse(void);
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart2;
@@ -110,8 +116,11 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+    /* USART2 interrupt Init */
+    HAL_NVIC_SetPriority(USART2_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(USART2_IRQn);
   /* USER CODE BEGIN USART2_MspInit 1 */
-
+    __HAL_UART_ENABLE_IT(&huart2,UART_IT_RXNE);
   /* USER CODE END USART2_MspInit 1 */
   }
 }
@@ -133,6 +142,8 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
     */
     HAL_GPIO_DeInit(GPIOA, USART_TX_Pin|USART_RX_Pin);
 
+    /* USART2 interrupt Deinit */
+    HAL_NVIC_DisableIRQ(USART2_IRQn);
   /* USER CODE BEGIN USART2_MspDeInit 1 */
 
   /* USER CODE END USART2_MspDeInit 1 */
@@ -328,6 +339,135 @@ void send_data_json_array(void)
 	else if(buff_used == 2 )
 	{
 		is_bufftwo_full = false;
+	}
+}
+
+void serial_data_push(uint8_t val)
+{
+	if (val== '$')
+	{
+		valid_flag = true;
+	}
+	if (valid_flag)
+	{
+		if (val == '\n')
+		{
+			// End of line received, parse the data.
+			valid_flag = false;
+			serial_buffer[serial_bufferp++] = '\0';
+			serial_parse();
+			serial_bufferp = 0;
+			memset(serial_buffer,0,sizeof(serial_buffer));
+		}
+		else
+		{
+			serial_buffer[serial_bufferp++] = val;
+		}
+	}
+	return;
+}
+
+static void serial_parse(void)
+{
+	// Serial Format: $Period_x=val;
+	// Serial Format: $Duty_x=val;
+	uint32_t arr_index;
+	char pr_str[]= "Period";
+	char dy_str[]= "Duty";
+	char tmpstr[10];
+	uint32_t value = 0;
+	uint32_t data_type=0;
+	uint32_t tmpstrp;
+
+	if(strstr((const char*)serial_buffer,pr_str)!=NULL)
+	{
+		data_type = 1; // Period Data
+	}
+	else if (strstr((const char*)serial_buffer,dy_str)!=NULL)
+	{
+		data_type = 2; // Duty Cycle Data
+	}
+
+	for (arr_index=0;arr_index < serial_bufferp;arr_index++)
+	{
+		if(serial_buffer[arr_index]=='_')
+		{
+			break;
+		}
+	}
+	if (arr_index >= serial_bufferp)
+	{
+		return;
+	}
+	arr_index ++;
+
+	switch (serial_buffer[arr_index])
+	{
+	case 1: // Coil 1
+		for (;arr_index<serial_bufferp;arr_index++)
+		{
+			if(serial_buffer[arr_index]=='=')
+			{
+				break;
+			}
+		}
+		arr_index++;
+		for (;arr_index<serial_bufferp;arr_index++)
+		{
+		    if(serial_buffer[arr_index]=='\0')
+		    {
+		        break;
+		    }
+		    tmpstr[tmpstrp++] = serial_buffer[arr_index];
+		}
+		tmpstr[tmpstrp]='\0';
+		value = atoi(tmpstr);
+
+		if (data_type == 1 )
+		{
+			// Update Period Value of coil 1
+			set_coil1_period(value);
+		}
+		else if (data_type == 2 )
+		{
+			// Update Duty Cycle of coil 1
+			set_coil1_duty(value);
+		}
+		break;
+	case 2: // Coil 2
+		for (;arr_index<serial_bufferp;arr_index++)
+		{
+			if(serial_buffer[arr_index]=='=')
+			{
+				break;
+			}
+		}
+		arr_index++;
+		for (;arr_index<serial_bufferp;arr_index++)
+		{
+		    if(serial_buffer[arr_index]=='\0')
+		    {
+		        break;
+		    }
+		    tmpstr[tmpstrp++] = serial_buffer[arr_index];
+		}
+		tmpstr[tmpstrp]='\0';
+		value = atoi(tmpstr);
+
+		if (data_type == 1 )
+		{
+			// Update Period Value of coil 2
+			set_coil2_period(value);
+		}
+		else if (data_type == 2 )
+		{
+			// Update Duty Cycle of coil 2
+			set_coil2_duty(value);
+		}
+		break;
+	default:
+		return;
+		break;
 	}
 }
 /* USER CODE END 1 */

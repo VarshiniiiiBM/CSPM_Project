@@ -69,6 +69,7 @@ uint32_t calib_count = 0;
 extern ADC_HandleTypeDef hadc1;
 extern ADC_HandleTypeDef hadc2;
 extern TIM_HandleTypeDef htim3;
+extern UART_HandleTypeDef huart2;
 /* USER CODE BEGIN EV */
 extern uint32_t mag_hor;
 extern uint32_t mag_ver;
@@ -315,6 +316,32 @@ void TIM3_IRQHandler(void)
   /* USER CODE BEGIN TIM3_IRQn 1 */
 	__HAL_TIM_CLEAR_FLAG(&htim3, TIM_FLAG_UPDATE);
   /* USER CODE END TIM3_IRQn 1 */
+}
+
+/**
+  * @brief This function handles USART2 global interrupt.
+  */
+void USART2_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART2_IRQn 0 */
+	if (__HAL_UART_GET_IT(&huart2,UART_IT_RXNE))
+	{
+		uint8_t RxByte=0;
+		uint16_t uhMask;
+		UART_MASK_COMPUTATION(&huart2);
+		uhMask = huart2.Mask;
+		RxByte=(uint8_t)(huart2.Instance->RDR & (uint8_t)uhMask);
+		serial_data_push(RxByte);
+	}
+	else
+	{
+		// can handle more cases.
+		__HAL_UART_CLEAR_IT(&huart2,UART_CLEAR_OREF);
+	}
+  /* USER CODE END USART2_IRQn 0 */
+  /* USER CODE BEGIN USART2_IRQn 1 */
+
+  /* USER CODE END USART2_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
