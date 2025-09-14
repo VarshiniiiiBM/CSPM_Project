@@ -21,7 +21,13 @@
 #include "tim.h"
 
 /* USER CODE BEGIN 0 */
+struct timer_config{
+	uint32_t period;
+	uint32_t duty;
+};
 
+struct timer_config coil_1_timerc = {tim1_period,tim1_duty};
+struct timer_config coil_2_timerc = {tim2_period,tim2_duty};
 /* USER CODE END 0 */
 
 TIM_HandleTypeDef htim1;
@@ -47,7 +53,7 @@ void MX_TIM1_Init(void)
   htim1.Instance = TIM1;
   htim1.Init.Prescaler = 80;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 10000-1;
+  htim1.Init.Period = tim1_period;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
@@ -72,7 +78,7 @@ void MX_TIM1_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = tim1_period;
+  sConfigOC.Pulse = tim1_duty;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW;
   sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
@@ -82,6 +88,7 @@ void MX_TIM1_Init(void)
   {
     Error_Handler();
   }
+  __HAL_TIM_DISABLE_OCxPRELOAD(&htim1, TIM_CHANNEL_3);
   sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
   sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
   sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
@@ -121,7 +128,7 @@ void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 80;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 10000-1;
+  htim2.Init.Period = tim2_period;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -144,13 +151,14 @@ void MX_TIM2_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = tim2_period;
+  sConfigOC.Pulse = tim2_duty;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();
   }
+  __HAL_TIM_DISABLE_OCxPRELOAD(&htim2, TIM_CHANNEL_3);
   /* USER CODE BEGIN TIM2_Init 2 */
 
   /* USER CODE END TIM2_Init 2 */
@@ -358,11 +366,35 @@ void PWM_START_OPM(TIM_HandleTypeDef *htim, uint32_t Channel)
 void TURN_ON_COIL1 (void)
 {
 	// Set period then turn on, extended with uart.
+	TIM1->ARR = coil_1_timerc.period;
+	TIM1->CCR3 = coil_1_timerc.duty;
 	PWM_START_OPM(&htim1,TIM_CHANNEL_3);
 }
 
 void TURN_ON_COIL2 (void)
 {
+	TIM2->ARR = coil_2_timerc.period;
+	TIM2->CCR3 = coil_2_timerc.duty;
 	PWM_START_OPM(&htim2,TIM_CHANNEL_3);
+}
+
+void set_coil1_duty(uint32_t value)
+{
+	coil_1_timerc.duty = value;
+}
+
+void set_coil2_duty(uint32_t value)
+{
+	coil_2_timerc.duty = value;
+}
+
+void set_coil1_period(uint32_t value)
+{
+	coil_1_timerc.period = value;
+}
+
+void set_coil2_period(uint32_t value)
+{
+	coil_2_timerc.period = value;
 }
 /* USER CODE END 1 */

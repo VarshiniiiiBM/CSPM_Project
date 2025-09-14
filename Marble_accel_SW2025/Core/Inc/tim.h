@@ -52,6 +52,10 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 void PWM_START_OPM(TIM_HandleTypeDef *htim, uint32_t Channel);
 void TURN_ON_COIL1(void);
 void TURN_ON_COIL2(void);
+void set_coil1_duty(uint32_t value);
+void set_coil2_duty(uint32_t value);
+void set_coil1_period(uint32_t value);
+void set_coil2_period(uint32_t value);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
