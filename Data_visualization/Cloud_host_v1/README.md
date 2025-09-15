@@ -3,7 +3,7 @@
 This script enables **real-time data streaming** from an STM32 microcontroller to a mobile/web browser using **FastAPI** hosted on an **Azure Web App**.  
 It is designed for remote access to sensor data in a secure and reliable manner.
 
-Significance and Idea Behind Implementation
+## Significance and Idea Behind Implementation
 
 The script showcases how STM32 sensor data can be accessed remotely via the cloud instead of being limited to a local PC. By using Azure Web App and WebSockets, it demonstrates a  IoT-style approach, enabling secure real-time data access from any device. This enhances learning outcomes by combining hardware, networking, and cloud technologies into a practical end-to-end system.
 
