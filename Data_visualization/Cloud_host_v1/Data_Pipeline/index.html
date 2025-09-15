@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Marble Accelerator Realtime Data</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 10px;
+      background: #f4f4f4;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-gap: 15px;
+    }
+    .chart-container {
+      background: #fff;
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      height: 300px; /*  default height for desktop */
+    }
+
+    /* Mobile: stack charts in 1 column */
+    @media (max-width: 768px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      .chart-container {
+        height: 200px; /*  smaller height for phones */
+      }
+    }
+  </style>
+</head>
+<body>
+  <h2>Marble Accelerator Realtime Data</h2>
+  <div class="grid">
+    <div class="chart-container"><canvas id="chartD1"></canvas></div>
+    <div class="chart-container"><canvas id="chartD2"></canvas></div>
+    <div class="chart-container"><canvas id="chartD3"></canvas></div>
+    <div class="chart-container"><canvas id="chartD4"></canvas></div>
+  </div>
+
+  <script>
+    // Utility to create chart with compact labels and title
+    function createChart(ctx, color, title, xLabel, yLabel) {
+      return new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            data: [],
+            borderColor: color,
+            fill: false,
+            tension: 0.1
+          }]
+        },
+        options: { 
+          animation: false,
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            title: {
+              display: true,
+              text: title,
+              align: 'center',
+              font: { size: 13 },
+              padding: { top: 5, bottom: 5 }
+            }
+          },
+          layout: {
+            padding: { left: 5, right: 5, top: 0, bottom: 0 }
+          },
+          scales: {
+            x: {
+              title: { display: true, text: xLabel, font: { size: 11 } },
+              ticks: { maxTicksLimit: 5, font: { size: 10 } }
+            },
+            y: {
+              title: { display: true, text: yLabel, font: { size: 11 } },
+              ticks: { font: { size: 10 } }
+            }
+          }
+        }
+      });
+    }
+
+    // Create 4 charts
+    const chartD1 = createChart(document.getElementById('chartD1'), "red",   "Chart D1", "Time", "D1 Value");
+    const chartD2 = createChart(document.getElementById('chartD2'), "blue",  "Chart D2", "Time", "D2 Value");
+    const chartD3 = createChart(document.getElementById('chartD3'), "green", "Chart D3", "Time", "D3 Value");
+    const chartD4 = createChart(document.getElementById('chartD4'), "purple","Chart D4", "Time", "D4 Value");
+
+    // Connect to WebSocket
+    const ws = new WebSocket(`wss://${window.location.host}/ws`);
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.D1 && data.D2 && data.D3 && data.D4) {
+        chartD1.data.labels = data.D1.map((_, i) => i);
+        chartD1.data.datasets[0].data = data.D1;
+        chartD1.update();
+
+        chartD2.data.labels = data.D2.map((_, i) => i);
+        chartD2.data.datasets[0].data = data.D2;
+        chartD2.update();
+
+        chartD3.data.labels = data.D3.map((_, i) => i);
+        chartD3.data.datasets[0].data = data.D3;
+        chartD3.update();
+
+        chartD4.data.labels = data.D4.map((_, i) => i);
+        chartD4.data.datasets[0].data = data.D4;
+        chartD4.update();
+      }
+    };
+  </script>
+</body>
+</html>
