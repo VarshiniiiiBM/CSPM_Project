@@ -1,6 +1,6 @@
 
 # STM32 Real-Time Data Visualization
-
+ 
 This Python script enables real-time data visualization of sensor data from an STM32 through serial communication. The data can be visualized both on a desktop application (PyQt6) and on a web interface (Plotly.js), accessible remotely through FastAPI, WebSockets, and ngrok. A QR code is generated at runtime, allowing instant access to the live charts on mobile devices.
 
 
