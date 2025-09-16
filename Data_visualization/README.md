@@ -1,7 +1,7 @@
 # Marble Accelerator Project - Data Visualization
 
 This repository contains code for real-time visualization of Marble Accelerator data.  
-The project has now been organized into two main parts:
+The project has now been organized into three main parts:
 
 - "Pyqt_plotter"
   Contains the PyQt-based plotting application for real-time charts in a desktop GUI.
