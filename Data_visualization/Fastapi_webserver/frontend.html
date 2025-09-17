@@ -4,8 +4,7 @@
 
   Description:
     This HTML file serves as the frontend for the Marble Accelerator project.
-    It connects to a FastAPI WebSocket server running at "/ws" and displays
-    real-time charts of data received from the hardware.
+    It connects to a FastAPI WebSocket server running at "/ws" and displays real-time charts of data received from the hardware.
 
   Features:
     - Uses Plotly.js to render four live-updating charts.
@@ -13,7 +12,7 @@
         D1: Raw sensor data 1
         D2: Raw sensor data 2
         D3: Raw sensor data 3
-        D4: Calculated value from D1
+        D4: Calculated value from D1 (Kinetic Energy)
     - Automatically connects using "ws://" or "wss://" depending on protocol.
     - Updates charts continuously as new JSON messages arrive.
 
@@ -26,66 +25,245 @@
     - Title and short description at the top.
     - Four charts rendered using Plotly.js.
     - Each chart is labeled with X-axis (time) and Y-axis (sensor values).
+
+  =======================================================================
 -->
+
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Marble Accelerator</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-  </head>
-  <body>
-    <h2>Real-time Marble Accelerator</h2>
-    <div id="chart1"></div>
-    <div id="chart2"></div>
-    <div id="chart3"></div>
-    <div id="chart4"></div>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Marble Accelerator </title>
 
-    <script>
-let protocol = location.protocol === "https:" ? "wss://" : "ws://";
-let ws = new WebSocket(protocol + location.host + "/ws");
+  <!-- Plotly.js for chart rendering -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <!-- html2canvas for capturing dashboard as an image -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-// Generate X-axis values (0, 0.1, 0.2, ..., 9.9)
-let x_vals = Array.from({length: 100}, (_, i) => (i * 0.1).toFixed(1));
-//ws.send("hello world from browser")
+  <style>
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 20px;
+    position: relative;   /* needed so ::before can attach */
+    z-index: 0;
+  }
 
-ws.onmessage = (event) => {
-    let data = JSON.parse(event.data);
-    let d1 = data.D1 || [];
-    let d2 = data.D2 || [];
-    let d3 = data.D3 || [];
-    let d4 = data.D4 || [];  //D4 added for KE
+  body::before {
+    content: "";
+    position: fixed;      /* cover whole screen */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    background-image: url("/static/Marble_img.png");
+    background-repeat: no-repeat;
+    background-size: cover;       
+    background-position: center;  
+    background-attachment: fixed;
+
+    opacity: 0.7;         /*makes image faded*/
+    z-index: -1;           /* ensures it stays behind content */
+  }
 
 
-    const layout_template = (title, x_label, y_label) => ({
-        title: title,
+    h2 {
+      text-align: center;
+      font-size: 27px;
+      font-weight: 600;
+      margin-bottom: 30px;
+      color: rgba(37, 18, 18, 0.874);
+      border-radius: 8px;
+      border: 4px solid #fbfafa;
+      background: #efd4a0;
+      margin-left: 480px;
+      margin-right: 480px;
+      padding: 25px 20px 17px;
+      box-shadow: #3a2d2d 10px 10px 7px, 
+                    inset 10px 10px 14px #3a2d2d;
+    }
+
+    /* Grid layout for charts (2 columns) */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Container around each chart */
+    .chart-container {
+      background: white;
+      border-radius: 12px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      padding: 15px;
+      box-shadow: 12px 12px 14px rgba(50, 38, 24, 0.747),
+                  inset 4px 4px 6px #644c34;
+    }
+    .chart-container > div {
+      height: 300px; /* fix chart height */
+    }
+
+    /* Download button styling (top-right corner) */
+    #downloadDashboardBtn {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid #aaa;
+      box-shadow: rgb(77, 42, 42) 2px 3px 6px,
+                  inset 1px 1px 4px #623c3c;
+      background: #f4dab2;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    #downloadDashboardBtn svg {
+      width: 18px;
+      height: 18px;
+      fill: #333;
+      transition: fill 0.2s;
+    }
+
+    /* Hover effect for button */
+    #downloadDashboardBtn:hover {
+      background: #007bff;   /* blue background */
+      color: white;          /* white text */
+    }
+    #downloadDashboardBtn:hover svg {
+      fill: white;           /* white icon on hover */
+    }
+  </style>
+</head>
+<body>
+  <h2>Marble Accelerator Dashboard</h2>
+
+  <!-- Button placed top-right -->
+  <button id="downloadDashboardBtn">
+    <!-- Download icon (SVG) -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <path d="M12 16l4-5h-3V4h-2v7H8l4 5zm-7 2v2h14v-2H5z"/>
+    </svg>
+    Download
+  </button>
+
+  <div class="grid">
+    <div class="chart-container"><div id="chart1"></div></div>
+    <div class="chart-container"><div id="chart2"></div></div>
+    <div class="chart-container"><div id="chart3"></div></div>
+    <div class="chart-container"><div id="chart4"></div></div>
+  </div>
+
+  <script>
+    // Decide protocol
+    let protocol = location.protocol === "https:" ? "wss://" : "ws://";
+    let ws = new WebSocket(protocol + location.host + "/ws");
+
+    // Generate X-axis values (0, 0.1, 0.2, ..., 9.9)
+    let x_vals = Array.from({length: 100}, (_, i) => (i * 0.1).toFixed(1));
+
+    // Handle incoming WebSocket messages
+    ws.onmessage = (event) => {
+      let data = JSON.parse(event.data); // Parse received JSON
+      let d1 = data.D1 || [];            // Dataset 1
+      let d2 = data.D2 || [];            // Dataset 2
+      let d3 = data.D3 || [];            // Dataset 3
+      let d4 = data.D4 || [];            // Dataset 4 (e.g. KE)
+
+      // Layout template (reused for all charts)
+      const layout_template = (title, x_label, y_label) => ({
+        title: { text: title, font: { size: 16, weight: "bold" } },
+        margin: { l: 70, r: 20, t: 40, b: 50 },
         xaxis: {
-            title: x_label,
-            showline: true,
-            linecolor: 'black',
-            linewidth: 2,
-            ticks: 'outside',
-            showgrid: true
+          title: x_label,
+          showline: true,
+          linecolor: 'black',
+          linewidth: 2,
+          ticks: 'outside',
+          showgrid: true
         },
         yaxis: {
-            title: y_label,
-            showline: true,
-            linecolor: 'black',
-            linewidth: 2,
-            ticks: 'outside',
-            showgrid: true
+          title: { text: y_label, standoff: 5 }, // standoff = gap between label and ticks
+          automargin: true,                     
+          showline: true,
+          linecolor: 'black',
+          linewidth: 2,
+          ticks: 'outside',
+          showgrid: true
         }
+      });
+
+      // Plotly config (remove unwanted toolbar buttons)
+      const config = {
+        displaylogo: false,
+        modeBarButtonsToRemove: [
+          'zoom2d', 'pan2d', 'select2d', 'lasso2d',
+          'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d',
+          'hoverClosestCartesian', 'hoverCompareCartesian',
+          'toggleSpikelines', 'resetViews', 'toggleHover'
+        ]
+      };
+
+      // Create plots (with distinct colors)
+      Plotly.newPlot("chart1", [{
+        x: x_vals, y: d1, type: "scatter", mode: "lines",
+        line: { color: "brown", width: 2 }
+      }], layout_template("D1", "Time (ms)", "D1 values"), config);
+
+      Plotly.newPlot("chart2", [{
+        x: x_vals, y: d2, type: "scatter", mode: "lines",
+        line: { color: "indigo", width: 2 }
+      }], layout_template("D2", "Time (ms)", "D2 values"), config);
+
+      Plotly.newPlot("chart3", [{
+        x: x_vals, y: d3, type: "scatter", mode: "lines",
+        line: { color:"olive", width: 2 }
+      }], layout_template("D3", "Time (ms)", "D3 values"), config);
+
+      Plotly.newPlot("chart4", [{
+        x: x_vals, y: d4, type: "scatter", mode: "lines",
+        line: { color: "tuquoise", width: 2}
+      }], layout_template("D4", "Time (ms)", "D4 values"), config);
+    };
+
+    // Capture dashboard as a single PNG when download button is clicked
+    document.getElementById("downloadDashboardBtn").addEventListener("click", () => {
+      let grid = document.querySelector(".grid");
+      html2canvas(grid).then(canvas => {
+        let link = document.createElement("a");
+        link.download = "dashboard.png";                 
+        link.href = canvas.toDataURL("image/png");       // convert to PNG data
+        link.click();                                    // trigger download
+      });
     });
 
+    //
+    // Get the computed background-image of the body
+  const body = document.body;
+  const bgImage = getComputedStyle(body).backgroundImage;
+  console.log("Background-image property:", bgImage);
 
-    Plotly.newPlot("chart1", [{ x: x_vals, y: d1, type: "scatter" }], layout_template("D1", "Time (ms)", "D1 values"));
-    Plotly.newPlot("chart2", [{ x: x_vals, y: d2, type: "scatter" }], layout_template("D2", "Time (ms)", "D2 values"));
-    Plotly.newPlot("chart3", [{ x: x_vals, y: d3, type: "scatter" }], layout_template("D3", "Time (ms)", "D3 values"));
-    Plotly.newPlot("chart4", [{ x: x_vals, y: d4, type: "scatter" }], layout_template("D4", "Time (ms)", "D4 values"));
+  // Extract the URL from the CSS value
+  const urlMatch = bgImage.match(/url\(["']?(.*?)["']?\)/);
+  if (urlMatch) {
+    const imageUrl = urlMatch[1];
+    console.log("Extracted image URL:", imageUrl);
 
-};
-</script>
-
-
-  </body>
+    // Create an Image object to check if it loads
+    const img = new Image();
+    img.src = imageUrl;
+    img.onload = () => console.log("Background image loaded successfully!");
+    img.onerror = () => console.log("Failed to load background image!");
+  } else {
+    console.log("No background image found.");
+  }
+  </script>
+</body>
 </html>
-
