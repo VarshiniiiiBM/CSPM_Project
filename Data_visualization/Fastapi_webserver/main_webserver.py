@@ -7,6 +7,7 @@ import logging
 
 from fastapi import FastAPI, WebSocket
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 import uvicorn
 
 # =======================
@@ -40,6 +41,8 @@ app = FastAPI()
 # Keep track of active WebSocket clients
 clients = set()
 
+#path to image file
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 async def get():
