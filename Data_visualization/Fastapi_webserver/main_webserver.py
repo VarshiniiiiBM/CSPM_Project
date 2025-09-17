@@ -22,7 +22,7 @@ BAUD_RATE = 115200      # Baud rate for serial communication
 # 3 = detailed debug
 
 # =======================
-debuglevel = 0
+debuglevel = 3
 # =======================
 
 
@@ -44,7 +44,7 @@ clients = set()
 @app.get("/")
 async def get():
     """Serve the index HTML file when accessing root."""
-    with open("frontend.html", "r") as f:
+    with open("GUI.html", "r") as f:
         return HTMLResponse(f.read())
 
 
