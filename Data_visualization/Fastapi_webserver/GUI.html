@@ -21,11 +21,6 @@
     2. Open this file in a web browser (or via "http://localhost:8000/" if served).
     3. Observe real-time sensor data visualization.
 
-  UI:
-    - Title and short description at the top.
-    - Four charts rendered using Plotly.js.
-    - Each chart is labeled with X-axis (time) and Y-axis (sensor values).
-
   =======================================================================
 -->
 
@@ -45,7 +40,7 @@
     font-family: Arial, Helvetica, sans-serif;
     margin: 0;
     padding: 20px;
-    position: relative;  
+    position: relative;   /* needed so ::before can attach */
     z-index: 0;
   }
 
@@ -58,26 +53,24 @@
     height: 100%;
 
     background-image: url("/static/Marble_img.png");
-    background-repeat: no-repeat;
     background-size: cover;       
     background-position: center;  
+    background-attachment: fixed;
 
     opacity: 0.7;         /*makes image faded*/
     z-index: -1;           /* ensures it stays behind content */
   }
 
-
     h2 {
       text-align: center;
       font-size: 27px;
       font-weight: 600;
-      margin-bottom: 30px;
       color: rgba(37, 18, 18, 0.874);
       border-radius: 8px;
       border: 4px solid #fbfafa;
       background: #efd4a0;
-      max-width: 640px;     /* limit heading width so it doesn’t stretch too far */
-      margin: 0 auto 30px;  /* auto left/right centers it, 30px bottom margin = responsive to all screen*/
+      max-width: 640px;
+      margin: 0 auto 30px;
       padding: 25px 20px 17px;
       box-shadow: #3a2d2d 10px 10px 7px, 
                     inset 10px 10px 14px #3a2d2d;
@@ -88,20 +81,19 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 20px;
-      max-width: 1200px;
-      margin: 0 auto;
     }
 
     /* Container around each chart */
     .chart-container {
       background: white;
       border-radius: 12px;
+      margin: 20px;
       padding: 15px;
       box-shadow: 12px 12px 14px rgba(50, 38, 24, 0.747),
                   inset 4px 4px 6px #644c34;
     }
     .chart-container > div {
-      height: 300px; /* fix chart height */
+      height: 350px; /* fix chart height */
     }
 
     /* Download button styling (top-right corner) */
@@ -154,8 +146,7 @@
   <div class="grid">
     <div class="chart-container"><div id="chart1"></div></div>
     <div class="chart-container"><div id="chart2"></div></div>
-    <div class="chart-container"><div id="chart3"></div></div>
-    <div class="chart-container"><div id="chart4"></div></div>
+  
   </div>
 
   <script>
@@ -163,32 +154,41 @@
     let protocol = location.protocol === "https:" ? "wss://" : "ws://";
     let ws = new WebSocket(protocol + location.host + "/ws");
 
-    // Generate X-axis values (0, 0.1, 0.2, ..., 9.9)
-    let x_vals = Array.from({length:100}, (_, i) => Number((i * 0.1).toFixed(1)));
+    // Fixed X-axis: 100 samples [0..99]
+    const x_vals = Array.from({ length: 100 }, (_, i) => i);
+
+    // Normalize array length to 100 samples
+    const normalize = (arr) => {
+      if (!Array.isArray(arr)) return Array(100).fill(null);
+      if (arr.length > 100) return arr.slice(0, 100);
+      if (arr.length < 100) return arr.concat(Array(100 - arr.length).fill(null));
+      return arr;
+    };
 
     // Handle incoming WebSocket messages
     ws.onmessage = (event) => {
       let data = JSON.parse(event.data); // Parse received JSON
-      let d1 = data.D1 || [];            // Dataset 1
-      let d2 = data.D2 || [];            // Dataset 2
-      let d3 = data.D3 || [];            // Dataset 3
-      let d4 = data.D4 || [];            // Dataset 4 (e.g. KE)
 
-      // Layout template (reused for all charts)
+      let d1 = normalize(data.D1 || []);
+      let d2 = normalize(data.D2 || []);
+
+      // Layout template
       const layout_template = (title, x_label, y_label) => ({
         title: { text: title, font: { size: 16, weight: "bold" } },
         margin: { l: 70, r: 20, t: 40, b: 50 },
         xaxis: {
-          title: x_label,
-          showline: true,
-          linecolor: 'black',
-          linewidth: 2,
-          ticks: 'outside',
-          showgrid: true
-        },
+        title: x_label,
+        showline: true,
+        linecolor: 'black',
+        linewidth: 2,
+        ticks: 'outside',
+        showgrid: true,
+        range: [0, 99],     // Always include 0–99
+        dtick: 10           // Optional: ticks every 10 samples
+    },
         yaxis: {
-          title: { text: y_label, standoff: 5 }, // standoff = gap between label and ticks
-          automargin: true,                     
+          title: { text: y_label, standoff: 5 },
+          automargin: true,
           showline: true,
           linecolor: 'black',
           linewidth: 2,
@@ -197,7 +197,7 @@
         }
       });
 
-      // Plotly config (remove unwanted toolbar buttons)
+      // Plotly config
       const config = {
         displaylogo: false,
         modeBarButtonsToRemove: [
@@ -208,39 +208,29 @@
         ]
       };
 
-      // Create plots (with distinct colors)
+      // Create plots
       Plotly.newPlot("chart1", [{
         x: x_vals, y: d1, type: "scatter", mode: "lines",
         line: { color: "brown", width: 2 }
-      }], layout_template("D1", "Time (ms)", "D1 values"), config);
+      }], layout_template("Sensor 1", "Samples", "Magnetic Field (T)"), config);
 
       Plotly.newPlot("chart2", [{
         x: x_vals, y: d2, type: "scatter", mode: "lines",
         line: { color: "indigo", width: 2 }
-      }], layout_template("D2", "Time (ms)", "D2 values"), config);
+      }], layout_template("Sensor 2", "Samples", "Magnetic Field (T)"), config);
 
-      Plotly.newPlot("chart3", [{
-        x: x_vals, y: d3, type: "scatter", mode: "lines",
-        line: { color:"olive", width: 2 }
-      }], layout_template("D3", "Time (ms)", "D3 values"), config);
-
-      Plotly.newPlot("chart4", [{
-        x: x_vals, y: d4, type: "scatter", mode: "lines",
-        line: { color: "turquoise", width: 2}
-      }], layout_template("D4", "Time (ms)", "D4 values"), config);
     };
 
-    // Capture dashboard as a single PNG when download button is clicked
+    // Capture dashboard as PNG
     document.getElementById("downloadDashboardBtn").addEventListener("click", () => {
       let grid = document.querySelector(".grid");
       html2canvas(grid).then(canvas => {
         let link = document.createElement("a");
         link.download = "dashboard.png";                 
-        link.href = canvas.toDataURL("image/png");       // convert to PNG data
-        link.click();                                    // trigger download
+        link.href = canvas.toDataURL("image/png");       
+        link.click();                                    
       });
     });
-
   </script>
 </body>
 </html>
