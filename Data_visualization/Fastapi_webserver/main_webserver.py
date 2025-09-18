@@ -14,6 +14,7 @@ import uvicorn
 # Serial configuration
 SERIAL_PORT = 'COM5'   # Update this to match your serial port
 BAUD_RATE = 115200      # Baud rate for serial communication
+LOG_FILE = "serial_data_log.txt"   # JSON Lines format (1 JSON per line)
 # =======================
 
 # Debug levels:
@@ -22,10 +23,7 @@ BAUD_RATE = 115200      # Baud rate for serial communication
 # 2 = connections and key events
 # 3 = detailed debug
 
-# =======================
 debuglevel = 3
-# =======================
-
 
 # Configure logger
 logging.basicConfig(
@@ -41,15 +39,15 @@ app = FastAPI()
 # Keep track of active WebSocket clients
 clients = set()
 
-#path to image file
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 async def get():
     """Serve the index HTML file when accessing root."""
-    with open("GUI.html", "r") as f:
+    with open("GUI_DASH.html", "r") as f:  #index_clr_dy
         return HTMLResponse(f.read())
-
+ 
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -65,7 +63,6 @@ async def websocket_endpoint(websocket: WebSocket):
             if debuglevel > 2:
                 logger.debug("text in ws from " + str(websocket.client.host) + ":" + str(websocket.client.port) + " received")
     except:
-        # On disconnection
         if debuglevel > 1:
             logger.info(f"ws {websocket.client.host}:{websocket.client.port} disconnected")
     finally:
@@ -82,11 +79,9 @@ async def broadcast(data: dict):
             if debuglevel > 2:
                 logger.debug("data sent to " + str(ws.client.host) + ":" + str(ws.client.port))
         except:
-            # Skip failed clients
             if debuglevel > 1:
                 logger.warning("Failed to send data to client")
             pass
-    # Keep only alive clients
     clients.clear()
     clients.update(living)
 
@@ -114,47 +109,52 @@ class SerialReader(threading.Thread):
         buffer = b""
         while self.running:
             try:
-                # Read available bytes from serial
                 buffer += self.ser.read(self.ser.in_waiting or 1)
 
-                # Process line by line
                 while b"\n" in buffer:
                     line, buffer = buffer.split(b"\n", 1)
                     try:
                         line_str = line.decode("utf-8")
                         if debuglevel > 2:
                             logger.debug("Received line: %s", line_str)
-                            pass
+                            with open(LOG_FILE, "a") as f:     #PRINT VALUES
+                                f.write(line_str.strip() + "\n")
                     except UnicodeDecodeError as e:
                         if debuglevel > 1:
                             logger.warning("Unicode decode error: %s | Raw line: %s", e, line)
-                        continue                  
+                        continue
 
                     try:
-                        # Parse JSON
                         data = json.loads(line_str)
 
-                        # Ensure required keys exist and contain 100 samples each
-                        if all(len(data.get(k, [])) == 100 for k in ["D1", "D2", "D3"]):
-                            d1, d2, d3 = data["D1"], data["D2"], data["D3"]
-                            # Compute D4 from D1 values [Formulae]
-                            d4 = [0.5 * 0.008 * (v ** 2) for v in d1]
+                        # accept partial JSON, not fixed length
+                        if any(k in data for k in ["D1", "D2"]):
+                            payload = {}
 
-                            payload = {"D1": d1, "D2": d2, "D3": d3, "D4": d4}
+                            d1 = data.get("D1")
+                            d2 = data.get("D2")
+                            
+                            if d1 is not None:
+                                payload["D1"] = d1
 
-                            # Send data via asyncio loop
+                            if d2 is not None:
+                                payload["D2"] = d2
+                            # Broadcast only what we have
                             try:
                                 loop = asyncio.get_event_loop()
                             except RuntimeError:
                                 loop = asyncio.new_event_loop()
                                 asyncio.set_event_loop(loop)
 
-                            loop.run_until_complete(broadcast(payload)) #all data in payload is sent without interupt
+                            loop.run_until_complete(broadcast(payload))
 
                             if debuglevel > 2:
-                                logger.debug("Payload broadcasted successfully")
+                                logger.debug("Payload broadcasted successfully: keys=%s", list(payload.keys()))
 
                             time.sleep(0.05)
+                        else:
+                            if debuglevel > 1:
+                                logger.warning("JSON received but no valid D1/D2 keys: %s", line_str.strip())
                     except json.JSONDecodeError:
                         if debuglevel > 1:
                             logger.warning("Invalid JSON received: %s", line_str.strip())
