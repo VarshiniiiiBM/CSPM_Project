@@ -49,8 +49,18 @@ volatile uint32_t marble_count = 0;
 volatile uint32_t adc1_new_val_flag = 0;
 volatile uint32_t adc2_new_val_flag = 0;
 
-uint32_t adc1_running_sum = 0;
-uint32_t adc2_running_sum = 0;
+float adc1_running_sum = 0;
+float adc2_running_sum = 0;
+volatile uint32_t calib_flag = 1;
+volatile uint32_t marble_entered = 0;
+volatile uint32_t marble_exited = 0;
+volatile uint32_t marble_passed_mid = 0;
+
+volatile uint32_t coil1_timeout=0;
+volatile uint32_t coil2_timeout=0;
+
+uint32_t speed_count=0;
+float speed=0;
 
 uint32_t calib_count = 0;
 /* USER CODE END PV */
@@ -220,17 +230,40 @@ void ADC1_2_IRQHandler(void)
 {
   /* USER CODE BEGIN ADC1_2_IRQn 0 */
 	// Get which adc it is?
-	if (__HAL_ADC_GET_FLAG(&hadc1,(ADC_FLAG_EOC | ADC_FLAG_EOS|ADC_FLAG_OVR)))
+	uint32_t mag_hor_diff = 0;
+	if (__HAL_ADC_GET_FLAG(&hadc1,ADC_FLAG_EOC))
 	{
 		mag_hor = HAL_ADC_GetValue(&hadc1);
 		__HAL_ADC_CLEAR_FLAG(&hadc1, (ADC_FLAG_EOC | ADC_FLAG_EOS|ADC_FLAG_OVR));
 		adc1_new_val_flag = 1;
 	}
-	else if (__HAL_ADC_GET_FLAG(&hadc2,(ADC_FLAG_EOC | ADC_FLAG_EOS|ADC_FLAG_OVR)))
+	else if (__HAL_ADC_GET_FLAG(&hadc2,ADC_FLAG_EOC))
 	{
 		mag_ver = HAL_ADC_GetValue(&hadc2);
 		__HAL_ADC_CLEAR_FLAG(&hadc2, (ADC_FLAG_EOC | ADC_FLAG_EOS|ADC_FLAG_OVR));
 		adc2_new_val_flag = 1;
+	}
+	if(!calib_flag && adc1_new_val_flag)
+	{
+		adc1_new_val_flag = 0;
+		mag_hor_diff = mag_hor>=adc1_running_sum ? mag_hor-adc1_running_sum : adc1_running_sum-mag_hor;
+		if (mag_hor_diff > 35)
+		{
+			marble_entered = 1;
+		}
+		else
+		{
+			if(marble_entered)
+			{
+				marble_entered = 0;
+				if (!coil1_timeout)
+				{
+					coil1_timeout = 1;
+					TURN_ON_COIL1();
+				}
+			}
+			marble_exited = 1;
+		}
 	}
   /* USER CODE END ADC1_2_IRQn 0 */
   /* USER CODE BEGIN ADC1_2_IRQn 1 */
@@ -247,19 +280,37 @@ void TIM3_IRQHandler(void)
 	// 0.1 ms configured maybe
 	// Check if adc is running???
 	//ADC_START already handled that case
+	// Current plan is to trigger another coil after some time after first coil is triggerned.
 	static volatile uint32_t time_counter;
-	static uint32_t calib_flag = 1;
-	uint32_t mag_hor_diff = 0;
+//	uint32_t mag_hor_diff = 0;
 	uint32_t mag_ver_diff = 0;
 
-	time_counter++;
+	if (coil1_timeout || coil2_timeout)
+	{
+		time_counter++;
+		if(time_counter == 20*14) // 5 ms
+		{
+			// Turn on second coil
+			if(!coil2_timeout)
+			{
+				coil2_timeout = 1;
+				TURN_ON_COIL2();
+			}
+		}
+		if (time_counter == 20*400) // reset after 500ms
+		{
+			coil1_timeout = 0;
+			coil2_timeout = 0;
+			time_counter = 0;
+		}
+	}
 
 	if (calib_flag)
 	{
-		if (calib_count >= 15)
+		if (calib_count == 20)
 		{
-			adc1_running_sum = adc1_running_sum>>15;
-			adc2_running_sum = adc2_running_sum>>15;
+			adc1_running_sum = (float)adc1_running_sum/20;
+			adc2_running_sum = (float)adc2_running_sum/20;
 			calib_flag = 0;
 		}
 		else if (adc1_new_val_flag && adc2_new_val_flag)
@@ -273,42 +324,25 @@ void TIM3_IRQHandler(void)
 	}
 	else
 	{
-		// Basic control arch:
-		// Right now turn on the coil when marble is detected, ie difference is greater than 50.
-		mag_hor_diff = mag_hor>=adc1_running_sum ? mag_hor-adc1_running_sum : adc1_running_sum-mag_hor;
-		mag_ver_diff = mag_ver>=adc2_running_sum ? mag_ver-adc2_running_sum : adc2_running_sum-mag_ver;
-		if (mag_hor_diff > 50 || mag_ver_diff > 50)
+		mag_ver_diff = mag_ver>=adc2_running_sum?mag_ver-adc2_running_sum:adc2_running_sum-mag_ver;
+		if(mag_ver_diff > 35 )
 		{
-			if (mag_hor_diff > 50)
+			marble_passed_mid = 1;
+			speed_count++;
+		}
+		else
+		{
+			if(speed_count!=0)
 			{
-				TURN_ON_COIL1();
+				speed = (float)5 / (speed_count);
+				speed_count = 0;
 			}
-			if (mag_ver_diff > 50)
-			{
-				TURN_ON_COIL2();
-			}
-			put_data(mag_hor, mag_ver, 1);
+		}
+		if(marble_entered || (mag_ver_diff > 35))
+		{
+			put_data(mag_hor, mag_ver, speed);
 		}
 	}
-	// calibration phase 16 samples.
-//	if (mag_hor<3180)
-//	{
-//		marble_count ++ ;
-//		time_counter = 0;
-//		if (!marble_inside_flag)
-//		{
-//			marble_inside_flag = 1;
-//		}
-//	}
-//	if (time_counter >= 1000) // give it 10ms to reset
-//	{
-//		time_counter = 0;
-//		if (marble_inside_flag)
-//		{
-//			marble_inside_flag = 0;
-//			marble_exit_flag = 1;
-//		}
-//	}
 	// start ADC conversion
 	HAL_ADC_Start_IT(&hadc1);
 	HAL_ADC_Start_IT(&hadc2);

@@ -41,7 +41,7 @@ extern UART_HandleTypeDef huart2;
 void MX_USART2_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-void put_data(uint32_t val1,uint32_t val2,int val3);
+void put_data(uint32_t val1,uint32_t val2,float val3);
 void send_data_json_array(void);
 void serial_data_push(uint8_t val);
 /* USER CODE END Prototypes */

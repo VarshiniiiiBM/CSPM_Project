@@ -11,7 +11,6 @@
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
   * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
@@ -28,6 +27,8 @@ struct timer_config{
 
 struct timer_config coil_1_timerc = {tim1_period,tim1_duty};
 struct timer_config coil_2_timerc = {tim2_period,tim2_duty};
+
+extern uint32_t marble_passed_mid;
 /* USER CODE END 0 */
 
 TIM_HandleTypeDef htim1;
@@ -81,7 +82,7 @@ void MX_TIM1_Init(void)
   sConfigOC.Pulse = tim1_duty;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW;
   sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  sConfigOC.OCFastMode = TIM_OCFAST_ENABLE;
   sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
   sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
   if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
@@ -153,7 +154,7 @@ void MX_TIM2_Init(void)
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
   sConfigOC.Pulse = tim2_duty;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  sConfigOC.OCFastMode = TIM_OCFAST_ENABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();
@@ -182,7 +183,7 @@ void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 0;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 800-1;
+  htim3.Init.Period = 4000-1;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
@@ -352,29 +353,51 @@ void PWM_START_OPM(TIM_HandleTypeDef *htim, uint32_t Channel)
 		}
 
 		/* Enable the Peripheral, except in trigger mode where enable is automatically done with trigger */
-		//		if (IS_TIM_SLAVE_INSTANCE(htim->Instance))
-		//		{
-		//			tmpsmcr = htim->Instance->SMCR & TIM_SMCR_SMS;
-		//			if (!IS_TIM_SLAVEMODE_TRIGGER_ENABLED(tmpsmcr))
-		//			{
-		//__HAL_TIM_ENABLE(htim);
+//		if (IS_TIM_SLAVE_INSTANCE(htim->Instance))
+//		{
+//			tmpsmcr = htim->Instance->SMCR & TIM_SMCR_SMS;
+//			if (!IS_TIM_SLAVEMODE_TRIGGER_ENABLED(tmpsmcr))
+//			{
+//				__HAL_TIM_ENABLE(htim);
+//			}
+//		}
 		HAL_TIM_ENABLE_OPM(htim);
-		//			}
 	}
 }
 
 void TURN_ON_COIL1 (void)
 {
 	// Set period then turn on, extended with uart.
-	TIM1->ARR = coil_1_timerc.period;
-	TIM1->CCR3 = coil_1_timerc.duty;
+//	TIM1->ARR = coil_1_timerc.period;
+//	TIM1->CCR3 = coil_1_timerc.duty;
+	if (marble_passed_mid)
+	{
+		TIM1->ARR = 20000-1;
+		TIM1->CCR3 = 10000-1;
+	}
+	else
+	{
+		TIM1->ARR = 24000-1;
+		TIM1->CCR3 = 2000-1;
+	}
 	PWM_START_OPM(&htim1,TIM_CHANNEL_3);
 }
 
 void TURN_ON_COIL2 (void)
 {
-	TIM2->ARR = coil_2_timerc.period;
-	TIM2->CCR3 = coil_2_timerc.duty;
+//	TIM2->ARR = coil_2_timerc.period;
+//	TIM2->CCR3 = coil_2_timerc.duty;
+	if (marble_passed_mid)
+	{
+		TIM2->ARR = 24000-1;
+		TIM2->CCR3 = 2000-1;
+	}
+	else
+	{
+		TIM2->ARR = 24000-1;
+		TIM2->CCR3 = 2000-1;
+	}
+	marble_passed_mid = 0;
 	PWM_START_OPM(&htim2,TIM_CHANNEL_3);
 }
 
