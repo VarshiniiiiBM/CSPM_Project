@@ -1,126 +1,240 @@
+<!-- 
+  Marble Accelerator - Real-time Visualization
+  ============================================
+
+  Description:
+    This HTML file serves as the frontend for the Marble Accelerator project.
+    It connects to a FastAPI WebSocket server running at "/ws" and displays real-time charts of data received from the hardware.
+
+  Features:
+    - Uses Plotly.js to render four live-updating charts.
+    - Displays:
+        D1: Raw sensor data 1
+        D2: Raw sensor data 2
+        D3: Raw sensor data 3
+        D4: Calculated value from D1 (Kinetic Energy)
+    - Automatically connects using "ws://" or "wss://" depending on protocol.
+    - Updates charts continuously as new JSON messages arrive.
+
+  Usage:
+    1. Ensure the backend server is running (FastAPI + WebSocket).
+    2. Open this file in a web browser (or via "http://localhost:8000/" if served).
+    3. Observe real-time sensor data visualization.
+
+  =======================================================================
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Marble Accelerator Realtime Data</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8">
+  <title>Marble Accelerator </title>
+
+  <!-- Plotly.js for chart rendering -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <!-- html2canvas for capturing dashboard as an image -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 10px;
-      background: #f4f4f4;
-    }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 20px;
+    position: relative;   /* needed so ::before can attach */
+    z-index: 0;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;      /* cover whole screen */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    background-image: url("/static/Marble_img.png");
+    background-repeat: no-repeat;
+    background-size: cover;       
+    background-position: center;  
+    background-attachment: fixed;
+
+    opacity: 0.7;         /*makes image faded*/
+    z-index: -1;           /* ensures it stays behind content */
+  }
+
     h2 {
       text-align: center;
-      margin-bottom: 15px;
+      font-size: 27px;
+      font-weight: 600;
+      color: rgba(37, 18, 18, 0.874);
+      border-radius: 8px;
+      border: 4px solid #fbfafa;
+      background: #efd4a0;
+      max-width: 640px;
+      margin: 0 auto 30px;
+      padding: 25px 20px 17px;
+      box-shadow: #3a2d2d 10px 10px 7px, 
+                    inset 10px 10px 14px #3a2d2d;
     }
+
+    /* Grid layout for charts (2 columns) */
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      grid-gap: 15px;
-    }
-    .chart-container {
-      background: #fff;
-      padding: 10px;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      height: 300px; /*  default height for desktop */
+      gap: 20px;
+      padding-left: 40px;
     }
 
-    /* Mobile: stack charts in 1 column */
-    @media (max-width: 768px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
-      .chart-container {
-        height: 200px; /*  smaller height for phones */
-      }
+    /* Container around each chart */
+    .chart-container {
+      background: white;
+      border-radius: 12px;
+      margin: 20px;
+      padding: 15px;
+      box-shadow: 12px 12px 14px rgba(50, 38, 24, 0.747),
+                  inset 4px 4px 6px #644c34;
+    }
+    .chart-container > div {
+      height: 350px; /* fix chart height */
+    
+    }
+
+    /* Download button styling (top-right corner) */
+    #downloadDashboardBtn {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid #aaa;
+      box-shadow: rgb(77, 42, 42) 2px 3px 6px,
+                  inset 1px 1px 4px #623c3c;
+      background: #f4dab2;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    #downloadDashboardBtn svg {
+      width: 18px;
+      height: 18px;
+      fill: #333;
+      transition: fill 0.2s;
+    }
+
+    /* Hover effect for button */
+    #downloadDashboardBtn:hover {
+      background: #007bff;   /* blue background */
+      color: white;          /* white text */
+    }
+    #downloadDashboardBtn:hover svg {
+      fill: white;           /* white icon on hover */
     }
   </style>
 </head>
 <body>
-  <h2>Marble Accelerator Realtime Data</h2>
+  <h2>Marble Accelerator Dashboard</h2>
+
+  <!-- Button placed top-right -->
+  <button id="downloadDashboardBtn">
+    <!-- Download icon (SVG) -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <path d="M12 16l4-5h-3V4h-2v7H8l4 5zm-7 2v2h14v-2H5z"/>
+    </svg>
+    Download
+  </button>
+
   <div class="grid">
-    <div class="chart-container"><canvas id="chartD1"></canvas></div>
-    <div class="chart-container"><canvas id="chartD2"></canvas></div>
-    <div class="chart-container"><canvas id="chartD3"></canvas></div>
-    <div class="chart-container"><canvas id="chartD4"></canvas></div>
+    <div class="chart-container"><div id="chart1"></div></div>
+    <div class="chart-container"><div id="chart2"></div></div>
+   
   </div>
 
   <script>
-    // Utility to create chart with compact labels and title
-    function createChart(ctx, color, title, xLabel, yLabel) {
-      return new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: [],
-          datasets: [{
-            data: [],
-            borderColor: color,
-            fill: false,
-            tension: 0.1
-          }]
-        },
-        options: { 
-          animation: false,
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            title: {
-              display: true,
-              text: title,
-              align: 'center',
-              font: { size: 13 },
-              padding: { top: 5, bottom: 5 }
-            }
-          },
-          layout: {
-            padding: { left: 5, right: 5, top: 0, bottom: 0 }
-          },
-          scales: {
-            x: {
-              title: { display: true, text: xLabel, font: { size: 11 } },
-              ticks: { maxTicksLimit: 5, font: { size: 10 } }
-            },
-            y: {
-              title: { display: true, text: yLabel, font: { size: 11 } },
-              ticks: { font: { size: 10 } }
-            }
-          }
+    // Decide protocol
+    let protocol = location.protocol === "https:" ? "wss://" : "ws://";
+    let ws = new WebSocket(protocol + location.host + "/ws");
+
+    // Fixed X-axis: 100 samples [0..99]
+    const x_vals = Array.from({ length: 100 }, (_, i) => i);
+
+    // Normalize array length to 100 samples
+    const normalize = (arr) => {
+      if (!Array.isArray(arr)) return Array(100).fill(null);
+      if (arr.length > 100) return arr.slice(0, 100);
+      if (arr.length < 100) return arr.concat(Array(100 - arr.length).fill(null));
+      return arr;
+    };
+
+    // Handle incoming WebSocket messages
+    ws.onmessage = (event) => {
+      let data = JSON.parse(event.data); // Parse received JSON
+
+      let d1 = normalize(data.D1 || []);
+      let d2 = normalize(data.D2 || []);
+
+      // Layout template
+      const layout_template = (title, x_label, y_label) => ({
+        title: { text: title, font: { size: 16, weight: "bold" } },
+        margin: { l: 70, r: 20, t: 40, b: 50 },
+        xaxis: {
+          title: x_label,
+          showline: true,
+          linecolor: 'black',
+          linewidth: 2,
+          ticks: 'outside',
+          range: [0, 99],
+          showgrid: true
+        
+  
+    },
+        yaxis: {
+          title: { text: y_label, standoff: 5 },
+          automargin: true,
+          showline: true,
+          linecolor: 'black',
+          linewidth: 2,
+          ticks: 'outside',
+          showgrid: true
         }
       });
-    }
 
-    // Create 4 charts
-    const chartD1 = createChart(document.getElementById('chartD1'), "red",   "Chart D1", "Time", "D1 Value");
-    const chartD2 = createChart(document.getElementById('chartD2'), "blue",  "Chart D2", "Time", "D2 Value");
-    const chartD3 = createChart(document.getElementById('chartD3'), "green", "Chart D3", "Time", "D3 Value");
-    const chartD4 = createChart(document.getElementById('chartD4'), "purple","Chart D4", "Time", "D4 Value");
+      // Plotly config
+      const config = {
+        displaylogo: false,
+        modeBarButtonsToRemove: [
+          'zoom2d', 'pan2d', 'select2d', 'lasso2d',
+          'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d',
+          'hoverClosestCartesian', 'hoverCompareCartesian',
+          'toggleSpikelines', 'resetViews', 'toggleHover'
+        ]
+      };
 
-    // Connect to WebSocket
-    const ws = new WebSocket(`wss://${window.location.host}/ws`);
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.D1 && data.D2 && data.D3 && data.D4) {
-        chartD1.data.labels = data.D1.map((_, i) => i);
-        chartD1.data.datasets[0].data = data.D1;
-        chartD1.update();
+      // Create plots
+      Plotly.newPlot("chart1", [{
+        x: x_vals, y: d1, type: "scatter", mode: "lines",
+        line: { color: "brown", width: 2 }
+      }], layout_template("Sensor 1", "Samples", "Magnetic Field (T)"), config);
 
-        chartD2.data.labels = data.D2.map((_, i) => i);
-        chartD2.data.datasets[0].data = data.D2;
-        chartD2.update();
+      Plotly.newPlot("chart2", [{
+        x: x_vals, y: d2, type: "scatter", mode: "lines",
+        line: { color: "indigo", width: 2 }
+      }], layout_template("Sensor 2", "Samples", "Magnetic Field (T)"), config);
 
-        chartD3.data.labels = data.D3.map((_, i) => i);
-        chartD3.data.datasets[0].data = data.D3;
-        chartD3.update();
-
-        chartD4.data.labels = data.D4.map((_, i) => i);
-        chartD4.data.datasets[0].data = data.D4;
-        chartD4.update();
-      }
     };
+
+    // Capture dashboard as PNG
+    document.getElementById("downloadDashboardBtn").addEventListener("click", () => {
+      let grid = document.querySelector(".grid");
+      html2canvas(grid).then(canvas => {
+        let link = document.createElement("a");
+        link.download = "dashboard.png";                 
+        link.href = canvas.toDataURL("image/png");       
+        link.click();                                    
+      });
+    });
   </script>
 </body>
 </html>

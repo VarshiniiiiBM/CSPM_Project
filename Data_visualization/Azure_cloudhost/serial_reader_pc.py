@@ -29,11 +29,11 @@ def main():
                 print("\u26A0 Invalid JSON:", line)
                 continue
 
-            # Ensure D1, D2, D3 exist and are length 100
-            if all(len(data.get(k, [])) == 100 for k in ["D1", "D2", "D3"]):
-                d1, d2, d3 = data["D1"], data["D2"], data["D3"]
-                d4 = [0.5 * 0.008 * (v ** 2) for v in d1]
-                payload = {"D1": d1, "D2": d2, "D3": d3, "D4": d4}
+            # Ensure D1, D2 exist and are length 100
+            if all(len(data.get(k, [])) == 100 for k in ["D1", "D2"]):
+                d1, d2 = data["D1"], data["D2"]
+               
+                payload = {"D1": d1, "D2": d2}
 
                 # Send JSON to Azure
                 response = requests.post(API_URL, json=payload)
