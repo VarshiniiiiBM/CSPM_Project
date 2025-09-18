@@ -55,8 +55,6 @@
 uint32_t mag_hor = 0;
 uint32_t mag_ver = 0;
 //uint32_t count=0;
-uint32_t speed_count = 0;
-double speed = 0;
 //extern uint32_t marble_inside_flag;
 //extern uint32_t marble_exit_flag;
 //extern uint32_t marble_count;
@@ -65,6 +63,8 @@ extern uint32_t adc2_new_val_flag;
 
 extern bool is_buffone_full;
 extern bool is_bufftwo_full;
+
+uint32_t pv_count=0;
 
 /* USER CODE END PV */
 
@@ -120,36 +120,11 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   HAL_ADCEx_Calibration_Start(&hadc1,ADC_SINGLE_ENDED);
-  HAL_ADC_Start_IT(&hadc1);
   HAL_ADCEx_Calibration_Start(&hadc2,ADC_SINGLE_ENDED);
+  HAL_ADC_Start_IT(&hadc1);
   HAL_ADC_Start_IT(&hadc2);
-  // Get avg running value in first second.
-//  uint32_t tickstart = HAL_GetTick();
-//  uint32_t adc_1_sum = 0;
-//  uint32_t adc_2_sum = 0;
-//  uint32_t count_1 = 0;
-//  uint32_t count_2 = 0;
-  //HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
-//  TIM1->CCR3 = 0;
-//  TIM1->CCR3 = 5000-1;
-//  while (HAL_GetTick() - tickstart < 1000)
-//  {
-//	  if (adc1_new_val_flag)
-//	  {
-//		  //summing values
-//		  adc1_new_val_flag = 0;
-//		  adc_1_sum += mag_hor;
-//		  count_1 ++;
-//	  }
-//	  if (adc2_new_val_flag)
-//	  {
-//		  adc2_new_val_flag = 0;
-//		  adc_2_sum += mag_ver;
-//		  count_2 ++;
-//	  }
-//  }
-//  adc1_running_sum = adc_1_sum / count_1;
-//  adc2_running_sum = adc_2_sum / count_2;
+  HAL_TIM_Base_Start_IT(&htim3);
+
 
   /* USER CODE END 2 */
 
@@ -157,73 +132,11 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-//	  // Start ADC Conversion
-//	  HAL_ADC_Start(&hadc1);
-//	  // Poll ADC1 Perihperal & TimeOut = 1mSec
-//	  HAL_ADC_PollForConversion(&hadc1, 1);
-//	  // Read The ADC Conversion Result & Map It To PWM DutyCycle
-//	  val = HAL_ADC_GetValue(&hadc1);
-
-//	  if (val<3180)
-//	  {
-//		  count = 0;
-//		  speed_count++;
-//		  speed = (float)5 / speed_count;
-//	  if (marble_exit_flag)
-//	  {
-//		  marble_exit_flag = 0;
-//		  uint32_t tmp_count = marble_count;
-//		  marble_count = 0;
-//		  float tmp_speed = (float)5000/tmp_count;
-//		  snprintf(buffer,100,"%f\n",tmp_speed);
-//		  Usart_Transmit_Str(buffer);
-//	  }
-//	  	  uint32_t tmp_val = val;
-//		  snprintf(buffer,100,"%d\n",tmp_val);
-//		  Usart_Transmit_Str(buffer);
-//	  }
-//	  if (count++>1000)
-//	  {
-//		  snprintf(buffer,100,"%f\n",speed);
-//		  Usart_Transmit_Str(buffer);
-//		  speed_count = 0;
-//		  count = 0;
-//		  speed = 0;
-//	  }
-//	  if(val<3180)
-//	  {
-//		  snprintf(buffer,100,"%d\n",mag_hor-running_sum);
-//		  Usart_Transmit_Str(buffer);
-//		  count ++;
-//		  if (count == 5000)
-//		  {
-//			  TIM1->CCR3 = tim1_period;
-//			  //TIM2->CCR3 = 5000-1;
-//			  //HAL_TIM_OnePulse_Start(&htim1, TIM_CHANNEL_3);
-//			  //HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
-//			  PWM_START_OPM(&htim1, TIM_CHANNEL_3);
-//			  //PWM_START_OPM(&htim2,TIM_CHANNEL_3);
-//			  //HAL_TIM_Base_Start(&htim1);
-//			  count = 0;
-//		  }
-//		  if (count == 1002)
-//		  {
-//			  TIM1->CCR3 = 0;
-//			  TIM1->EGR = TIM_EGR_UG;
-//			  count = 0;
-//		  }
-//	  }
-//	  else if (count++>100)
-//	  {
-//		  snprintf(buffer,100,"%d\n",val);
-//		  Usart_Transmit_Str(buffer);
-//		  count = 0;
-//	  }
 	  if (is_buffone_full || is_bufftwo_full)
 	  {
 		  send_data_json_array();
 	  }
-	  //HAL_Delay(1);
+	  HAL_Delay(1);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

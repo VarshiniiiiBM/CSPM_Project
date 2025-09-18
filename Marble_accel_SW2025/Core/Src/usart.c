@@ -28,7 +28,7 @@ char buffer[100]={0};
 struct data_struct {
 	uint32_t data1;		//find trade off between printing floats vs uint32_t
 	uint32_t data2;
-	int data3;
+	float data3;
 };
 
 // Two buffers instead of circular buffer architecture.
@@ -183,7 +183,7 @@ void Usart_Transmit_Str(uint8_t *msg)
 	}
 }
 
-void put_data(uint32_t val1,uint32_t val2,int val3)
+void put_data(uint32_t val1,uint32_t val2,float val3)
 {
 	//data_buff[readp].data1 = (uint32_t)val1; type casting seems to be wrong approach for float
 	// Select the buffer
@@ -319,7 +319,7 @@ void send_data_json_array(void)
 	for (int i=0;i<number_data_pts;i++)
 	{
 		// data 1 float
-		snprintf(local_val_buff,10,"%u",(unsigned int)struc_p->data3);
+		snprintf(local_val_buff,10,"%f",struc_p->data3);
 		if (i<number_data_pts-1)
 		{
 			strcat(local_val_buff,",");
