@@ -1,9 +1,9 @@
 import json
-import serial
 import time
 import asyncio
 import threading
 import logging
+import serial
 
 from fastapi import FastAPI, WebSocket
 from fastapi.responses import HTMLResponse
@@ -11,19 +11,15 @@ from fastapi.staticfiles import StaticFiles
 import uvicorn
 
 # =======================
-# Serial configuration
-SERIAL_PORT = 'COM5'   # Update this to match your serial port
-BAUD_RATE = 115200      # Baud rate for serial communication
-LOG_FILE = "serial_data_log.txt"   # JSON Lines format (1 JSON per line)
-# =======================
-
-# Debug levels:
-# 0 = no debug
-# 1 = errors only
-# 2 = connections and key events
-# 3 = detailed debug
-
+# Config
+SERIAL_PORT = "COM5"     # Change this to your port (e.g. "/dev/ttyUSB0" on Linux)
+BAUD_RATE = 115200       # Match your MCU baud rate
+LOG_FILE = "serial_data_log_4.txt"
+SEND_DELAY = 0.1         # seconds between sending points
+ADC_RESOLUTION = 12
+V_REF = 3.3
 debuglevel = 3
+# =======================
 
 # Configure logger
 logging.basicConfig(
@@ -35,19 +31,16 @@ logger = logging.getLogger("SerialWebSocketServer")
 
 # FastAPI app instance
 app = FastAPI()
-
-# Keep track of active WebSocket clients
 clients = set()
 
-
+# Mount static for serving images or CSS
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 async def get():
     """Serve the index HTML file when accessing root."""
-    with open("GUI_DASH.html", "r") as f:  #index_clr_dy
+    with open("GUI_VOLTAGE.html", "r") as f:
         return HTMLResponse(f.read())
- 
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -58,16 +51,12 @@ async def websocket_endpoint(websocket: WebSocket):
         logger.info(f"ws {websocket.client.host}:{websocket.client.port} connected")
     try:
         while True:
-            # keep the connection alive
             await websocket.receive_text()
-            if debuglevel > 2:
-                logger.debug("text in ws from " + str(websocket.client.host) + ":" + str(websocket.client.port) + " received")
     except:
         if debuglevel > 1:
             logger.info(f"ws {websocket.client.host}:{websocket.client.port} disconnected")
     finally:
         clients.remove(websocket)
-
 
 async def broadcast(data: dict):
     """Broadcast JSON data to all connected WebSocket clients."""
@@ -81,102 +70,85 @@ async def broadcast(data: dict):
         except:
             if debuglevel > 1:
                 logger.warning("Failed to send data to client")
-            pass
     clients.clear()
     clients.update(living)
 
+# ---------------------------
+# Helpers
+# ---------------------------
+
+def convert_to_voltage(raw_value):
+    return raw_value * V_REF / (2**ADC_RESOLUTION - 1)
+
+# ---------------------------
+# Serial Reader Thread
+# ---------------------------
 
 class SerialReader(threading.Thread):
-    """Thread to read data from serial port and broadcast to WebSocket clients."""
-
     def __init__(self, port, baudrate):
         super().__init__(daemon=True)
         self.port = port
         self.baudrate = baudrate
         self.running = True
-        try:
-            self.ser = serial.Serial(self.port, self.baudrate, timeout=2)
-            logger.info(f"Connected to {self.port}")
-        except Exception as e:
-            logger.error(f"Error opening serial port: {e}")
-            self.ser = None
 
     def run(self):
-        """Continuously read from serial port, parse JSON, and broadcast."""
-        if not self.ser:
+        try:
+            ser = serial.Serial(self.port, self.baudrate, timeout=1)
+            logger.info(f"Opened serial port {self.port} at {self.baudrate} baud")
+        except Exception as e:
+            logger.error(f"Could not open serial port {self.port}: {e}")
             return
 
-        buffer = b""
         while self.running:
             try:
-                buffer += self.ser.read(self.ser.in_waiting or 1)
+                line = ser.readline().decode("utf-8").strip()
+                if not line:
+                    continue
 
-                while b"\n" in buffer:
-                    line, buffer = buffer.split(b"\n", 1)
-                    try:
-                        line_str = line.decode("utf-8")
-                        if debuglevel > 2:
-                            logger.debug("Received line: %s", line_str)
-                            with open(LOG_FILE, "a") as f:     #PRINT VALUES
-                                f.write(line_str.strip() + "\n")
-                    except UnicodeDecodeError as e:
-                        if debuglevel > 1:
-                            logger.warning("Unicode decode error: %s | Raw line: %s", e, line)
-                        continue
+                # Log raw line
+                with open(LOG_FILE, "a") as f:
+                    f.write(line + "\n")
 
-                    try:
-                        data = json.loads(line_str)
+                try:
+                    data = json.loads(line)   # Expecting JSON string from MCU
+                except json.JSONDecodeError as e:
+                    logger.warning(f"Invalid JSON skipped: {e}")
+                    continue
 
-                        # accept partial JSON, not fixed length
-                        if any(k in data for k in ["D1", "D2"]):
-                            payload = {}
+                # Convert raw data to voltage
+                payload = {}
+                for key in ["D1", "D2", "D3"]:
+                    if key in data:
+                        payload[key] = [convert_to_voltage(val) for val in data[key]]
 
-                            d1 = data.get("D1")
-                            d2 = data.get("D2")
-                            
-                            if d1 is not None:
-                                payload["D1"] = d1
+                # Send payload via websocket
+                try:
+                    loop = asyncio.get_event_loop()
+                except RuntimeError:
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
 
-                            if d2 is not None:
-                                payload["D2"] = d2
-                            # Broadcast only what we have
-                            try:
-                                loop = asyncio.get_event_loop()
-                            except RuntimeError:
-                                loop = asyncio.new_event_loop()
-                                asyncio.set_event_loop(loop)
+                loop.run_until_complete(broadcast(payload))
+                time.sleep(SEND_DELAY)
 
-                            loop.run_until_complete(broadcast(payload))
-
-                            if debuglevel > 2:
-                                logger.debug("Payload broadcasted successfully: keys=%s", list(payload.keys()))
-
-                            time.sleep(0.05)
-                        else:
-                            if debuglevel > 1:
-                                logger.warning("JSON received but no valid D1/D2 keys: %s", line_str.strip())
-                    except json.JSONDecodeError:
-                        if debuglevel > 1:
-                            logger.warning("Invalid JSON received: %s", line_str.strip())
-                        continue
             except Exception as e:
-                logger.error(f"Serial read error: {e}")
-                break
+                logger.error(f"Error reading serial: {e}")
+                time.sleep(1)
+
+        ser.close()
 
     def stop(self):
-        """Stop the serial reader thread and close the port."""
         self.running = False
-        if self.ser and self.ser.is_open:
-            self.ser.close()
 
+# ---------------------------
+# Main Entry
+# ---------------------------
 
 def main():
-    """Start SerialReader thread and launch FastAPI server."""
     serial_thread = SerialReader(SERIAL_PORT, BAUD_RATE)
     serial_thread.start()
 
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
-
 
 if __name__ == "__main__":
     main()
