@@ -2,7 +2,6 @@ import sys
 import json
 import serial
 import time
-import ctypes
 import logging
 
 from PyQt6 import QtCore, QtWidgets
@@ -11,19 +10,27 @@ from PyQt6.QtGui import QPainter, QFont
 from PyQt6.QtCore import Qt
 
 # =======================
-# Serial config
-SERIAL_PORT = 'COM5'   # Update your port
-BAUD_RATE = 115200      # Baud rate for serial communication
+# Serial configuration
 # =======================
+SERIAL_PORT = 'COM5'          # Update with your serial port (e.g., COMx on Windows, /dev/ttyUSBx on Linux)
+BAUD_RATE = 115200            # Baud rate for serial communication
+LOG_FILE = "serial_data_log.txt"  # File to save raw JSON (1 per line)
+
+# =======================
+# ADC conversion config
+# =======================
+V_REF = 3.3                  # Reference voltage of ADC (depends on hardware, e.g., 3.3V)
+ADC_RESOLUTION = 12          # Bit resolution of ADC (e.g., 10-bit=1023, 12-bit=4095, etc.)
 
 # =======================
 # Debug and logger setup
-# 0 = no debug
-# 1 = errors only
-# 2 = info
-# 3 = detailed debug
+# Debug level:
+# 0 = no logs
+# 1 = only errors
+# 2 = warnings + info
+# 3 = detailed debug logs
 # =======================
-debuglevel = 0
+debuglevel = 3
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -33,11 +40,31 @@ logging.basicConfig(
 logger = logging.getLogger("PyQtSerialChart")
 
 
-# ---- Serial Reader ----
-class SerialReader(QtCore.QThread):
-    """Background thread for reading serial data and emitting it via a Qt signal."""
+# =======================
+# Helper: ADC → Voltage conversion
+# =======================
+def convert_to_voltage(raw_value):
+    """
+    Convert raw ADC value to voltage.
+    raw_value: integer (0 ... 2^ADC_RESOLUTION-1)
+    returns: float voltage in Volts
+    """
+    try:
+        return raw_value * V_REF / (2**ADC_RESOLUTION - 1)
+    except Exception:
+        return None
 
-    # Signal emitted when valid data is received
+
+# =======================
+# Serial Reader Thread
+# =======================
+class SerialReader(QtCore.QThread):
+    """
+    Background thread for reading serial data.
+    Continuously reads JSON lines from serial port and emits them via a Qt signal.
+    """
+
+    # Signal emitted when valid data is received (dict format)
     data_received = QtCore.pyqtSignal(dict)
 
     def __init__(self, port, baudrate):
@@ -54,41 +81,41 @@ class SerialReader(QtCore.QThread):
             self.ser = None
 
     def run(self):
-        """Continuously read from serial port, parse JSON, and emit via Qt signal."""
+        """Main loop: read serial data, parse JSON, and emit signal."""
         if not self.ser:
             return
 
-        buffer = b""
+        buffer = b""  # byte buffer
         while self.running:
             try:
-                # Read available bytes from serial
                 buffer += self.ser.read(self.ser.in_waiting or 1)
 
-                # Process complete lines (ending with \n)
-                while b"\n" in buffer:
+                while b"\n" in buffer:  # Split on newline (JSON per line)
                     line, buffer = buffer.split(b"\n", 1)
                     try:
                         line_str = line.decode("utf-8")
-                        if debuglevel > 2:
-                            logger.debug("Received line: %s", line_str.strip())
                     except UnicodeDecodeError:
                         continue
 
                     try:
-                        # Parse JSON data from line
+                        # Parse JSON object
                         data = json.loads(line_str)
 
-                        # Ensure D1, D2, D3 exist and have 100 samples each
-                        if all(len(data.get(k, [])) == 100 for k in ["D1", "D2", "D3"]):
+                        # Only process if it contains sensor keys
+                        if any(k in data for k in ["D1", "D2"]):
                             if debuglevel > 2:
                                 logger.debug("Valid JSON received, emitting signal")
 
-                            # Emit the parsed data to the GUI thread
+                            # Save raw JSON (not converted) to log file
+                            with open(LOG_FILE, "a") as f:
+                                f.write(line_str.strip() + "\n")
+
+                            # Emit data to UI
                             self.data_received.emit(data)
                             time.sleep(0.05)
                         else:
                             if debuglevel > 1:
-                                logger.warning("JSON missing required keys or incorrect length")
+                                logger.warning("JSON missing required keys")
                     except json.JSONDecodeError:
                         if debuglevel > 1:
                             logger.warning("Invalid JSON received: %s", line_str.strip())
@@ -98,7 +125,7 @@ class SerialReader(QtCore.QThread):
                 break
 
     def stop(self):
-        """Stop the serial reader and close the port."""
+        """Stop the thread and close serial port."""
         self.running = False
         if self.ser and self.ser.is_open:
             self.ser.close()
@@ -107,9 +134,14 @@ class SerialReader(QtCore.QThread):
             logger.info("SerialReader stopped")
 
 
-# ---- Chart Widget ----
+# =======================
+# Chart Widget
+# =======================
 class ChartWidget(QtWidgets.QWidget):
-    """Main widget that displays four real-time charts (D1, D2, D3, D4)."""
+    """
+    Main UI widget.
+    Displays real-time charts for D1 and D2.
+    """
 
     def __init__(self, serial_thread):
         super().__init__()
@@ -130,15 +162,13 @@ class ChartWidget(QtWidgets.QWidget):
         main_layout.addLayout(grid)
 
         # Chart titles and axis labels
-        self.titles = ["D1", "D2", "D3", "D4"]
-        self.y_labels = ["D1 values", "D2 values", "D3 values", "D4 values"]
-        self.x_labels = ["Time (ms)"] * 4
+        self.titles = ["Sensor 1 (Voltage)", "Sensor 2 (Voltage)"]
+        self.y_labels = ["Voltage (V)", "Voltage (V)"]
+        self.x_labels = ["Samples", "Samples"]
 
         self.charts, self.series, self.y_axes = [], [], []
-        # X values: 0.1 increments for 100 points → up to 10 seconds
-        self.x = [i * 0.1 for i in range(100)]
 
-        # Create 4 charts (2x2 grid)
+        # Create 2 charts (D1 and D2)
         for i, title in enumerate(self.titles):
             chart = QChart()
             chart.setTitle(title)
@@ -146,23 +176,23 @@ class ChartWidget(QtWidgets.QWidget):
             chart_view = QChartView(chart)
             chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-            # Line series (data curve)
+            # Line series (plot curve)
             s = QLineSeries()
             chart.addSeries(s)
 
             # X-axis setup
             axis_x = QValueAxis()
-            axis_x.setRange(0, 10)
+            axis_x.setRange(0, 100)  # default range, will auto-adjust
             axis_x.setTitleText(self.x_labels[i])
             axis_x.setTickCount(6)
             axis_x.setLabelFormat("%d")
 
-            # Y-axis setup (initial range)
+            # Y-axis setup
             axis_y = QValueAxis()
-            axis_y.setRange(-500, 500)
+            axis_y.setRange(0, V_REF)  # Voltage range (0 → V_REF)
             axis_y.setTitleText(self.y_labels[i])
 
-            # Font for axis labels
+            # Font size for labels
             font = QFont()
             font.setPointSize(7)
             axis_x.setLabelsFont(font)
@@ -174,7 +204,7 @@ class ChartWidget(QtWidgets.QWidget):
             s.attachAxis(axis_x)
             s.attachAxis(axis_y)
 
-            # Place chart in grid
+            # Place chart in grid (2x1 layout)
             row, col = i // 2, i % 2
             grid.addWidget(chart_view, row, col)
 
@@ -184,61 +214,68 @@ class ChartWidget(QtWidgets.QWidget):
 
     @QtCore.pyqtSlot(dict)
     def update_data(self, data):
-        """Update all 4 charts with new serial data."""
-        d1, d2, d3 = data.get("D1", []), data.get("D2", []), data.get("D3", [])
-        if not all(len(arr) == 100 for arr in [d1, d2, d3]):
-            if debuglevel > 1:
-                logger.warning("Received data with invalid length")
-            return
+        """
+        Update charts with new serial data.
+        Converts raw ADC values → voltages before plotting.
+        """
+        d1 = data.get("D1")
+        d2 = data.get("D2")
 
-        # Compute D4 from D1 (kinetic energy formula)
-        mass = 0.008
-        d4 = [0.5 * mass * (v ** 2) for v in d1]
+        data_list = [d1, d2]
 
-        data_list = [d1, d2, d3, d4]
-
-        # Update each chart
         for i, y_data in enumerate(data_list):
-            self.series[i].clear()
-            QtWidgets.QApplication.processEvents()
+            if y_data is None:
+                self.series[i].clear()
+                continue
 
-            # Replace with new points
-            points = [QtCore.QPointF(x, y) for x, y in zip(self.x, y_data)]
+            # Convert raw ADC values → Voltages
+            converted = [convert_to_voltage(v) for v in y_data if v is not None]
+
+            # X values = sample indices
+            x = list(range(len(converted)))
+            points = [QtCore.QPointF(xv, yv) for xv, yv in zip(x, converted)]
             self.series[i].replace(points)
 
-            # Adjust Y-axis dynamically based on data range
-            d_min, d_max = min(y_data), max(y_data)
-            margin = (d_max - d_min) * 0.1 if abs(d_max - d_min) > 1e-6 else 0.5
-            self.y_axes[i].setRange(d_min - margin, d_max + margin)
+            # Update X-axis dynamically
+            axis_x = self.charts[i].axes(Qt.Orientation.Horizontal)[0]
+            axis_x.setRange(0, len(x) - 1 if len(x) > 1 else 1)
+
+            # Update Y-axis dynamically
+            d_min, d_max = min(converted), max(converted)
+            margin = (d_max - d_min) * 0.1 if abs(d_max - d_min) > 1e-6 else 0.1
+            self.y_axes[i].setRange(max(0, d_min - margin), min(V_REF, d_max + margin))
 
         if debuglevel > 2:
-            logger.debug("Charts updated with new data")
+            logger.debug("Charts updated with new converted data")
 
 
-# ---- Application entry point ----
+# =======================
+# Application Entry Point
+# =======================
 def main():
-    """Set up application, start serial reader, and run Qt event loop."""
-
+    """Initialize application, start serial reader, and launch GUI."""
     app_qt = QtWidgets.QApplication(sys.argv)
 
-    # Start serial reader thread
+    # Start background serial thread
     serial_thread = SerialReader(SERIAL_PORT, BAUD_RATE)
+
+    # Create chart widget
     w = ChartWidget(serial_thread)
     w.resize(800, 600)
     w.show()
 
-    logger.info("Visualization started successfully — charts are ready and listening for data.")
-    # Connect serial data to chart update
+    logger.info("Visualization started — charts are ready and listening for data.")
     serial_thread.data_received.connect(w.update_data)
     serial_thread.start()
 
+    # Ensure serial thread stops when app exits
     def on_exit():
         serial_thread.stop()
         if debuglevel > 1:
             logger.info("Application exiting, serial thread stopped")
 
     app_qt.aboutToQuit.connect(on_exit)
-    logger.info("Application started successfully — charts are displayed and serial thread is running.")
+    logger.info("Application running — press Ctrl+C or close window to exit.")
     sys.exit(app_qt.exec())
 
 
