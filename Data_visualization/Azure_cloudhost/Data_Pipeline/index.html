@@ -187,7 +187,7 @@
           ticks: 'outside',
           range: [0, 99],
           showgrid: true
-        
+          // range: [1.5,1.85] 
   
     },
         yaxis: {
@@ -198,6 +198,7 @@
           linewidth: 2,
           ticks: 'outside',
           showgrid: true
+    
         }
       });
 
@@ -216,12 +217,12 @@
       Plotly.newPlot("chart1", [{
         x: x_vals, y: d1, type: "scatter", mode: "lines",
         line: { color: "brown", width: 2 }
-      }], layout_template("Sensor 1", "Samples", "Magnetic Field (T)"), config);
+      }], layout_template("Sensor 1", "Samples", "Sensor Data (V)"), config);
 
       Plotly.newPlot("chart2", [{
         x: x_vals, y: d2, type: "scatter", mode: "lines",
         line: { color: "indigo", width: 2 }
-      }], layout_template("Sensor 2", "Samples", "Magnetic Field (T)"), config);
+      }], layout_template("Sensor 2", "Samples", "Sensor Data (V)"), config);
 
     };
 
@@ -238,5 +239,3 @@
   </script>
 </body>
 </html>
-
-
