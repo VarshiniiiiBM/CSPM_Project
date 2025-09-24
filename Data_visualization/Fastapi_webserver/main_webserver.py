@@ -12,9 +12,9 @@ import uvicorn
 
 # =======================
 # Config
-SERIAL_PORT = "COM5"     # Change this to your port (e.g. "/dev/ttyUSB0" on Linux)
+SERIAL_PORT = "COM5"     # Change this to your port 
 BAUD_RATE = 115200       # Match your MCU baud rate
-LOG_FILE = "serial_data_log_4.txt"
+LOG_FILE = "serial_data_log.txt"
 SEND_DELAY = 0.1         # seconds between sending points
 ADC_RESOLUTION = 12
 V_REF = 3.3
@@ -39,7 +39,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 @app.get("/")
 async def get():
     """Serve the index HTML file when accessing root."""
-    with open("GUI_VOLTAGE.html", "r") as f:
+    with open("GUI_DASH.html", "r") as f:
         return HTMLResponse(f.read())
 
 @app.websocket("/ws")
@@ -117,7 +117,7 @@ class SerialReader(threading.Thread):
 
                 # Convert raw data to voltage
                 payload = {}
-                for key in ["D1", "D2", "D3"]:
+                for key in ["D1", "D2"]:
                     if key in data:
                         payload[key] = [convert_to_voltage(val) for val in data[key]]
 

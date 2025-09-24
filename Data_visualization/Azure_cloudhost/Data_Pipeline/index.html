@@ -9,19 +9,20 @@
   Features:
     - Uses Plotly.js to render four live-updating charts.
     - Displays:
-        D1: Raw sensor data 1
-        D2: Raw sensor data 2
+        D1: sensor data 1
+        D2: sensor data 2
        
     - Automatically connects using "ws://" or "wss://" depending on protocol.
     - Updates charts continuously as new JSON messages arrive.
 
   Usage:
-    1. Ensure the backend server is running (FastAPI + WebSocket).
-    2. Open this file in a web browser (or via "http://localhost:8000/" if served).
-    3. Observe real-time sensor data visualization.
+    1. Run the serial_reader_pc.py code to read stm32 data and to ingest it into azure web app
+    2. Scan the QR code or go to the AZURE URL : https://pipeline-server-buecbybefda4azh6.francecentral-01.azurewebsites.net/ to access the dashboard
+    3. Observe real-time sensor data visualization on PC as well as on mobile device browsers.
 
   =======================================================================
 -->
+
 
 <!DOCTYPE html>
 <html lang="en">
